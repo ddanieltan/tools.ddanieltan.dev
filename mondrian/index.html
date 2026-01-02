@@ -6,51 +6,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>24×24 Mondrian Generator</title>
     <style>
+        /* Base Reset & Layout (From Template) */
         * {
-            margin: 0;
-            padding: 0;
             box-sizing: border-box;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            min-height: 100vh;
-            padding: 2rem;
-        }
-
-        .container {
-            max-width: 1200px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 1000px; /* Wider for this tool */
             margin: 0 auto;
-            background: white;
-            border-radius: 1rem;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
+            padding: 20px;
+            background-color: #fdfdfd;
+            color: #333;
+            line-height: 1.6;
         }
 
-        .header {
-            margin-bottom: 2rem;
+        /* Header & Icon */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tool-icon {
+            height: 5em;
+            width: 5em;
+            background-color: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            flex-shrink: 0;
         }
 
         h1 {
-            font-size: 2rem;
+            margin: 0;
+            font-size: 2.5rem;
             color: #1e293b;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            letter-spacing: -0.5px;
         }
 
         .subtitle {
             color: #64748b;
-            margin-bottom: 0.5rem;
+            margin: 0;
+            font-size: 1rem;
         }
 
-        .save-note {
-            color: #2563eb;
-            font-size: 0.875rem;
+        /* Common UI Components */
+        .container {
+            background: white;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
+        label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #555;
+            transform: translateY(-1px);
+        }
+
+        /* Mondrian Specific Layout */
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -71,11 +119,12 @@
 
         .canvas-wrapper {
             background: #f8fafc;
-            border-radius: 0.75rem;
+            border-radius: 8px;
             padding: 1.5rem;
-            border: 2px solid #e2e8f0;
+            border: 1px solid #e2e8f0;
             display: flex;
             justify-content: center;
+            align-items: center;
         }
 
         #displayCanvas {
@@ -90,35 +139,18 @@
             cursor: pointer;
         }
 
-        .panel {
-            background: #f8fafc;
-            border-radius: 0.75rem;
-            padding: 1.5rem;
-            border: 2px solid #e2e8f0;
-            margin-bottom: 1.5rem;
-        }
-
-        .panel h3 {
-            font-size: 1rem;
-            color: #475569;
-            margin-bottom: 1rem;
+        /* Controls */
+        .control-panel {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         .control-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .control-group label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #475569;
-            margin-bottom: 0.5rem;
-            display: flex;
-            justify-content: space-between;
+            background: #fcfcfc;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #eee;
         }
 
         input[type="range"] {
@@ -128,13 +160,14 @@
             border-radius: 3px;
             outline: none;
             -webkit-appearance: none;
+            display: block;
         }
 
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 18px;
             height: 18px;
-            background: #2563eb;
+            background: #333;
             border-radius: 50%;
             cursor: pointer;
             transition: transform 0.1s;
@@ -147,158 +180,129 @@
         .color-inputs {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
+            gap: 10px;
         }
 
         .color-input-wrapper {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            align-items: center;
+            gap: 5px;
         }
 
         input[type="color"] {
             width: 100%;
             height: 40px;
-            border: 2px solid #cbd5e1;
-            border-radius: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
             cursor: pointer;
             padding: 2px;
             background: white;
         }
 
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            width: 100%;
-        }
-
-        .btn-primary {
-            background: #2563eb;
-            color: white;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-            margin-bottom: 1rem;
-        }
-
-        .btn-primary:hover {
-            background: #1d4ed8;
-            transform: translateY(-1px);
+        .color-label {
+            font-size: 0.75rem;
+            color: #64748b;
         }
 
         .btn-success {
-            background: #16a34a;
-            color: white;
-            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+            background-color: #16a34a;
         }
-
         .btn-success:hover {
-            background: #15803d;
-            transform: translateY(-1px);
+            background-color: #15803d;
         }
 
         .icon {
-            width: 1.25rem;
-            height: 1.25rem;
+            width: 1.25em;
+            height: 1.25em;
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>
-                <span id="headerArt" style="height: 2.5em; width: 2.5em; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #1e293b; background: white; margin-right: 0.25rem; overflow: hidden; line-height: 0;"></span>
-                24×24 Mondrian Generator
-            </h1>
-            <p class="subtitle">Generative art in the style of Piet Mondrian</p>
-            <p class="subtitle">Your design settings are saved in the URL, bookmark to save this design click on
-                segments to cycle colours</p>
-            <p class="subtitle">Click on segments to cycle through palette colours</p>
-        </div>
 
+    <header>
+        <div class="brand">
+            <!-- The script will inject the SVG into this div -->
+            <div id="headerArt" class="tool-icon" style="overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 0;"></div>
+            <h1>24×24 Mondrian Generator</h1>
+        </div>
+        <p class="subtitle">Generative art in the style of Piet Mondrian. Click on segments to cycle colors.</p>
+    </header>
+
+    <main class="container">
         <div class="main-grid">
             <!-- Canvas Area -->
             <div class="canvas-area">
                 <div class="canvas-wrapper">
                     <canvas id="displayCanvas" width="384" height="384"></canvas>
                 </div>
-                <button class="btn btn-success" id="downloadBtn">
+                <button class="btn-success" id="downloadBtn">
                     <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
-                    Download SVG (24×24)
+                    Download SVG
                 </button>
             </div>
 
             <!-- Controls Panel -->
-            <div>
-                <div class="panel">
-                    <h3>Configuration</h3>
+            <div class="control-panel">
+                
+                <div class="control-group">
+                    <label>
+                        Complexity
+                        <span id="complexityVal">3</span>
+                    </label>
+                    <input type="range" id="complexity" min="1" max="10" step="1" value="3">
+                </div>
 
-                    <div class="control-group">
-                        <label>
-                            Complexity
-                            <span id="complexityVal">3</span>
-                        </label>
-                        <input type="range" id="complexity" min="1" max="10" step="1" value="3">
-                    </div>
+                <div class="control-group">
+                    <label>
+                        Color Density
+                        <span id="densityVal">30%</span>
+                    </label>
+                    <input type="range" id="density" min="0" max="100" value="30">
+                </div>
 
-                    <div class="control-group">
-                        <label>
-                            Color Density
-                            <span id="densityVal">30%</span>
-                        </label>
-                        <input type="range" id="density" min="0" max="100" value="30">
-                    </div>
+                <div class="control-group">
+                    <label>
+                        Line Thickness
+                        <span id="thicknessVal">0.5</span>
+                    </label>
+                    <input type="range" id="thickness" min="0.1" max="2.0" step="0.1" value="0.5">
+                </div>
 
-                    <div class="control-group">
-                        <label>
-                            Line Thickness
-                            <span id="thicknessVal">0.5</span>
-                        </label>
-                        <input type="range" id="thickness" min="0.1" max="2.0" step="0.1" value="0.5">
-                    </div>
-
-                    <div class="control-group">
-                        <label>Palette</label>
-                        <div class="color-inputs">
-                            <div class="color-input-wrapper">
-                                <input type="color" id="color1" value="#ffffff">
-                                <span style="font-size: 0.75rem; text-align: center; color: #64748b">Base</span>
-                            </div>
-                            <div class="color-input-wrapper">
-                                <input type="color" id="color2" value="#ff0000">
-                                <span style="font-size: 0.75rem; text-align: center; color: #64748b">Accent 1</span>
-                            </div>
-                            <div class="color-input-wrapper">
-                                <input type="color" id="color3" value="#0000ff">
-                                <span style="font-size: 0.75rem; text-align: center; color: #64748b">Accent 2</span>
-                            </div>
+                <div class="control-group">
+                    <label>Palette</label>
+                    <div class="color-inputs">
+                        <div class="color-input-wrapper">
+                            <input type="color" id="color1" value="#ffffff">
+                            <span class="color-label">Base</span>
+                        </div>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="color2" value="#ff0000">
+                            <span class="color-label">Accent 1</span>
+                        </div>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="color3" value="#0000ff">
+                            <span class="color-label">Accent 2</span>
                         </div>
                     </div>
-
-                    <button class="btn btn-primary" id="regenerateBtn">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M23 4v6h-6" />
-                            <path d="M1 20v-6h6" />
-                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                        </svg>
-                        Regenerate Art
-                    </button>
                 </div>
+
+                <button id="regenerateBtn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6" />
+                        <path d="M1 20v-6h6" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    Regenerate Art
+                </button>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         // State
@@ -392,15 +396,12 @@
                         const idx = parseInt(key.slice(-1)) - 1;
                         state.colors[idx] = e.target.value;
                         updateHash();
-                        draw(); // Just redraw with new colors, don't regenerate geometry
+                        draw(); // Just redraw with new colors
                     });
                 } else {
                     inputs[key].addEventListener('input', (e) => {
                         state[key] = parseFloat(e.target.value);
                         updateLabels();
-                        // For these changes we need to regenerate/re-seed or just re-run with same seed?
-                        // Changing complexity or density changes the structure, so we should re-run generator
-                        // but keep the current seed implies it *tries* to keep structure but parameters change result.
                         updateHash();
                         generate(false); // keep seed
                     });
@@ -621,18 +622,10 @@
             // We want 24x24 coordinate system
             let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="384" height="384">`;
 
-            // Add background first to ensure no gaps? 
-            // Mondrian lines usually cover gaps.
-
             // Group for rectangles
             svg += `<g stroke="#000" stroke-width="${state.thickness}" stroke-linecap="square" stroke-linejoin="miter">`;
 
             rectangles.forEach(rect => {
-                // To avoid half-pixel issues with borders in SVG vs Canvas, 
-                // we assume standard stroke alignment. 
-                // However, 'vector-effect: non-scaling-stroke' is not ideal here if we want exact 24x24 scaling.
-                // Simple rects with stroke is fine.
-
                 svg += `<rect x="${rect.x}" y="${rect.y}" width="${rect.w}" height="${rect.h}" fill="${state.colors[rect.colorIndex]}" />`;
             });
 
