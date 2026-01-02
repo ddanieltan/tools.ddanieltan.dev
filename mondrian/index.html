@@ -87,6 +87,7 @@
             max-width: 384px;
             height: auto;
             aspect-ratio: 1;
+            cursor: pointer;
         }
 
         .panel {
@@ -357,7 +358,31 @@
             setupEventListeners();
         }
 
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+            
+            const gridScale = canvas.width / 24;
+            const gridX = x / gridScale;
+            const gridY = y / gridScale;
+
+            const clickedRect = rectangles.find(r => 
+                gridX >= r.x && gridX < r.x + r.w &&
+                gridY >= r.y && gridY < r.y + r.h
+            );
+
+            if (clickedRect) {
+                clickedRect.colorIndex = (clickedRect.colorIndex + 1) % 3;
+                draw();
+            }
+        }
+
         function setupEventListeners() {
+            canvas.addEventListener('click', handleCanvasClick);
+
             // Sliders
             Object.keys(inputs).forEach(key => {
                 if(key.startsWith('color')) {
@@ -440,7 +465,7 @@
             rand = sfc32(seed, seed ^ 0xDEADBEEF, seed ^ 0xCAFEBABE, seed ^ 0xBAADF00D);
 
             // Start with one big rectangle covering 24x24
-            rectangles = [{ x: 0, y: 0, w: 24, h: 24, color: state.colors[0] }];
+            rectangles = [{ x: 0, y: 0, w: 24, h: 24, colorIndex: 0 }];
             
             // Target segments: complexity * 2 (Max 20 at complexity 10)
             const targetCount = state.complexity * 2;
@@ -506,14 +531,14 @@
             if (splitVertically) {
                 const splitPos = Math.floor(rand() * (w - 1)) + 1; // 1 to w-1
                 return [
-                    { x: rect.x, y: rect.y, w: splitPos, h: rect.h, color: rect.color },
-                    { x: rect.x + splitPos, y: rect.y, w: w - splitPos, h: rect.h, color: rect.color }
+                    { x: rect.x, y: rect.y, w: splitPos, h: rect.h, colorIndex: rect.colorIndex },
+                    { x: rect.x + splitPos, y: rect.y, w: w - splitPos, h: rect.h, colorIndex: rect.colorIndex }
                 ];
             } else {
                 const splitPos = Math.floor(rand() * (h - 1)) + 1; // 1 to h-1
                 return [
-                    { x: rect.x, y: rect.y, w: rect.w, h: splitPos, color: rect.color },
-                    { x: rect.x, y: rect.y + splitPos, w: rect.w, h: h - splitPos, color: rect.color }
+                    { x: rect.x, y: rect.y, w: rect.w, h: splitPos, colorIndex: rect.colorIndex },
+                    { x: rect.x, y: rect.y + splitPos, w: rect.w, h: h - splitPos, colorIndex: rect.colorIndex }
                 ];
             }
         }
@@ -526,9 +551,9 @@
                 if (r < density) {
                     // Assign Accent Color
                     // 50/50 split between Color 2 and Color 3
-                    rect.color = rand() > 0.5 ? state.colors[1] : state.colors[2];
+                    rect.colorIndex = rand() > 0.5 ? 1 : 2;
                 } else {
-                    rect.color = state.colors[0]; // Base color
+                    rect.colorIndex = 0; // Base color
                 }
             });
         }
@@ -545,7 +570,7 @@
             ctx.strokeStyle = '#000000'; // Mondrian lines are black
             
             rectangles.forEach(rect => {
-                ctx.fillStyle = rect.color;
+                ctx.fillStyle = state.colors[rect.colorIndex];
                 
                 // Draw fill
                 ctx.fillRect(
@@ -593,7 +618,7 @@
                 // However, 'vector-effect: non-scaling-stroke' is not ideal here if we want exact 24x24 scaling.
                 // Simple rects with stroke is fine.
                 
-                svg += `<rect x="${rect.x}" y="${rect.y}" width="${rect.w}" height="${rect.h}" fill="${rect.color}" />`;
+                svg += `<rect x="${rect.x}" y="${rect.y}" width="${rect.w}" height="${rect.h}" fill="${state.colors[rect.colorIndex]}" />`;
             });
             
             svg += `</g></svg>`;
