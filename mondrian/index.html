@@ -80,7 +80,7 @@
 
         #displayCanvas {
             border: 2px solid #1e293b;
-            box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
             background: white;
             display: block;
             width: 100%;
@@ -219,7 +219,9 @@
                 24×24 Mondrian Generator
             </h1>
             <p class="subtitle">Generative art in the style of Piet Mondrian</p>
-            <p class="save-note">💾 Your design settings are saved in the URL</p>
+            <p class="subtitle">Your design settings are saved in the URL, bookmark to save this design click on
+                segments to cycle colours</p>
+            <p class="subtitle">Click on segments to cycle through palette colours</p>
         </div>
 
         <div class="main-grid">
@@ -242,7 +244,7 @@
             <div>
                 <div class="panel">
                     <h3>Configuration</h3>
-                    
+
                     <div class="control-group">
                         <label>
                             Complexity
@@ -313,7 +315,7 @@
         // Elements
         const canvas = document.getElementById('displayCanvas');
         const ctx = canvas.getContext('2d');
-        
+
         // Inputs
         const inputs = {
             complexity: document.getElementById('complexity'),
@@ -323,7 +325,7 @@
             color2: document.getElementById('color2'),
             color3: document.getElementById('color3')
         };
-        
+
         // Labels
         const labels = {
             complexity: document.getElementById('complexityVal'),
@@ -336,8 +338,8 @@
 
         // Simple Seeded Random
         function sfc32(a, b, c, d) {
-            return function() {
-                a |= 0; b |= 0; c |= 0; d |= 0; 
+            return function () {
+                a |= 0; b |= 0; c |= 0; d |= 0;
                 let t = (a + b | 0) + d | 0;
                 d = d + 1 | 0;
                 a = b ^ b >>> 9;
@@ -364,12 +366,12 @@
             const scaleY = canvas.height / rect.height;
             const x = (e.clientX - rect.left) * scaleX;
             const y = (e.clientY - rect.top) * scaleY;
-            
+
             const gridScale = canvas.width / 24;
             const gridX = x / gridScale;
             const gridY = y / gridScale;
 
-            const clickedRect = rectangles.find(r => 
+            const clickedRect = rectangles.find(r =>
                 gridX >= r.x && gridX < r.x + r.w &&
                 gridY >= r.y && gridY < r.y + r.h
             );
@@ -385,7 +387,7 @@
 
             // Sliders
             Object.keys(inputs).forEach(key => {
-                if(key.startsWith('color')) {
+                if (key.startsWith('color')) {
                     inputs[key].addEventListener('input', (e) => {
                         const idx = parseInt(key.slice(-1)) - 1;
                         state.colors[idx] = e.target.value;
@@ -459,50 +461,50 @@
         // Generator Logic
         function generate(newSeed = false) {
             if (newSeed) state.seed = Date.now();
-            
+
             // Setup PRNG
             const seed = state.seed;
             rand = sfc32(seed, seed ^ 0xDEADBEEF, seed ^ 0xCAFEBABE, seed ^ 0xBAADF00D);
 
             // Start with one big rectangle covering 24x24
-            rectangles = [{ x: 0, y: 0, w: 24, h: 24, colorIndex: 0 }];
-            
+            rectangles = [{x: 0, y: 0, w: 24, h: 24, colorIndex: 0}];
+
             // Target segments: complexity * 2 (Max 20 at complexity 10)
             const targetCount = state.complexity * 2;
-            
+
             // Iteratively split until we reach target count or cannot split anymore
             let iterations = 0;
             while (rectangles.length < targetCount && iterations < 100) {
                 iterations++;
-                
+
                 // Pick a rectangle to split
                 // Weighted random by area to prefer larger rectangles
                 let totalArea = 0;
                 rectangles.forEach(r => totalArea += (r.w * r.h));
-                
+
                 let randomVal = rand() * totalArea;
                 let candidateIdx = -1;
                 let accum = 0;
-                
-                for(let i=0; i<rectangles.length; i++) {
+
+                for (let i = 0; i < rectangles.length; i++) {
                     accum += (rectangles[i].w * rectangles[i].h);
                     if (randomVal <= accum) {
                         candidateIdx = i;
                         break;
                     }
                 }
-                
+
                 if (candidateIdx !== -1) {
                     const rect = rectangles[candidateIdx];
                     const splitResult = attemptSplit(rect);
-                    
+
                     if (splitResult) {
                         // Remove original and add the two new ones
                         rectangles.splice(candidateIdx, 1, ...splitResult);
                     }
                 }
             }
-            
+
             // Assign colors
             assignColors();
 
@@ -512,33 +514,33 @@
         function attemptSplit(rect) {
             const w = rect.w;
             const h = rect.h;
-            
+
             // Cannot split if too small (need at least 2 units to split into 1+1)
             if (w < 2 && h < 2) return null;
-            
+
             // Decide direction
             let splitVertically = rand() > 0.5;
-            
+
             // Constraints and biases
             if (w < 2) splitVertically = false; // Must split Horizontally
             else if (h < 2) splitVertically = true;  // Must split Vertically
             else {
-                 // If not constrained, maybe favor splitting the longer side
-                 if (w > h * 1.5) splitVertically = true;
-                 else if (h > w * 1.5) splitVertically = false;
+                // If not constrained, maybe favor splitting the longer side
+                if (w > h * 1.5) splitVertically = true;
+                else if (h > w * 1.5) splitVertically = false;
             }
 
             if (splitVertically) {
                 const splitPos = Math.floor(rand() * (w - 1)) + 1; // 1 to w-1
                 return [
-                    { x: rect.x, y: rect.y, w: splitPos, h: rect.h, colorIndex: rect.colorIndex },
-                    { x: rect.x + splitPos, y: rect.y, w: w - splitPos, h: rect.h, colorIndex: rect.colorIndex }
+                    {x: rect.x, y: rect.y, w: splitPos, h: rect.h, colorIndex: rect.colorIndex},
+                    {x: rect.x + splitPos, y: rect.y, w: w - splitPos, h: rect.h, colorIndex: rect.colorIndex}
                 ];
             } else {
                 const splitPos = Math.floor(rand() * (h - 1)) + 1; // 1 to h-1
                 return [
-                    { x: rect.x, y: rect.y, w: rect.w, h: splitPos, colorIndex: rect.colorIndex },
-                    { x: rect.x, y: rect.y + splitPos, w: rect.w, h: h - splitPos, colorIndex: rect.colorIndex }
+                    {x: rect.x, y: rect.y, w: rect.w, h: splitPos, colorIndex: rect.colorIndex},
+                    {x: rect.x, y: rect.y + splitPos, w: rect.w, h: h - splitPos, colorIndex: rect.colorIndex}
                 ];
             }
         }
@@ -547,7 +549,7 @@
             rectangles.forEach(rect => {
                 const r = rand();
                 const density = state.density / 100;
-                
+
                 if (r < density) {
                     // Assign Accent Color
                     // 50/50 split between Color 2 and Color 3
@@ -562,29 +564,29 @@
         function draw() {
             // Clear
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+
             // Scale 24x24 to canvas size (384x384 -> scale 16)
             const scale = canvas.width / 24;
-            
+
             ctx.lineWidth = state.thickness * scale;
             ctx.strokeStyle = '#000000'; // Mondrian lines are black
-            
+
             rectangles.forEach(rect => {
                 ctx.fillStyle = state.colors[rect.colorIndex];
-                
+
                 // Draw fill
                 ctx.fillRect(
-                    rect.x * scale, 
-                    rect.y * scale, 
-                    rect.w * scale, 
+                    rect.x * scale,
+                    rect.y * scale,
+                    rect.w * scale,
                     rect.h * scale
                 );
-                
+
                 // Draw border
                 ctx.strokeRect(
-                    rect.x * scale, 
-                    rect.y * scale, 
-                    rect.w * scale, 
+                    rect.x * scale,
+                    rect.y * scale,
+                    rect.w * scale,
                     rect.h * scale
                 );
             });
@@ -593,7 +595,7 @@
         // SVG Export
         function downloadSVG() {
             const svgContent = createSVGString();
-            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const blob = new Blob([svgContent], {type: 'image/svg+xml'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -605,22 +607,22 @@
         function createSVGString() {
             // We want 24x24 coordinate system
             let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="384" height="384">`;
-            
+
             // Add background first to ensure no gaps? 
             // Mondrian lines usually cover gaps.
-            
+
             // Group for rectangles
             svg += `<g stroke="#000" stroke-width="${state.thickness}" stroke-linecap="square" stroke-linejoin="miter">`;
-            
+
             rectangles.forEach(rect => {
                 // To avoid half-pixel issues with borders in SVG vs Canvas, 
                 // we assume standard stroke alignment. 
                 // However, 'vector-effect: non-scaling-stroke' is not ideal here if we want exact 24x24 scaling.
                 // Simple rects with stroke is fine.
-                
+
                 svg += `<rect x="${rect.x}" y="${rect.y}" width="${rect.w}" height="${rect.h}" fill="${state.colors[rect.colorIndex]}" />`;
             });
-            
+
             svg += `</g></svg>`;
             return svg;
         }
@@ -629,4 +631,5 @@
         init();
     </script>
 </body>
+
 </html>
