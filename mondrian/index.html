@@ -215,7 +215,7 @@
     <div class="container">
         <div class="header">
             <h1>
-                <img src="art.svg" alt="Mondrian Art" style="height: 2.5em; width: auto;">
+                <span id="headerArt" style="height: 2.5em; width: 2.5em; display: inline-flex; align-items: center; justify-content: center; border: 2px solid #1e293b; background: white; margin-right: 0.25rem; overflow: hidden; line-height: 0;"></span>
                 24×24 Mondrian Generator
             </h1>
             <p class="subtitle">Generative art in the style of Piet Mondrian</p>
@@ -590,6 +590,19 @@
                     rect.h * scale
                 );
             });
+
+            // Update header art
+            const headerArt = document.getElementById('headerArt');
+            if (headerArt) {
+                headerArt.innerHTML = createSVGString();
+                const svg = headerArt.querySelector('svg');
+                if (svg) {
+                    svg.style.height = '100%';
+                    svg.style.width = '100%';
+                    svg.removeAttribute('width');
+                    svg.removeAttribute('height');
+                }
+            }
         }
 
         // SVG Export
