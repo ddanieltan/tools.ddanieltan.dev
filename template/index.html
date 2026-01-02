@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Name</title>
+    <style>
+        /* Base Reset & Layout */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fdfdfd;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header & Icon */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tool-icon {
+            height: 5em;
+            background-color: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            /* Keeping slight radius for modern feel, though Mondrian is square */
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* Common UI Components */
+        .container {
+            background: white;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .result-area {
+            margin-top: 20px;
+        }
+
+        /* Utilities */
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="brand">
+            <!-- User will manually add art.svg to the folder -->
+            <img src="art.svg" alt="Tool Icon" class="tool-icon">
+            <h1>Tool Name</h1>
+        </div>
+        <p class="subtitle">A short description of what this tool does.</p>
+    </header>
+
+    <main class="container">
+        <!-- Input Section -->
+        <section>
+            <label for="input-field">Input</label>
+            <input type="text" id="input-field" placeholder="Enter text here...">
+            <button id="action-btn">Process</button>
+        </section>
+
+        <!-- Error Message Container (Hidden by default) -->
+        <div id="error-msg" class="error hidden"></div>
+
+        <!-- Output Section -->
+        <section class="result-area">
+            <label for="output-field">Result</label>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="output-field" readonly>
+                <button id="copy-btn" title="Copy to Clipboard">Copy</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- Elements ---
+        const inputField = document.getElementById('input-field');
+        const outputField = document.getElementById('output-field');
+        const actionBtn = document.getElementById('action-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const errorMsg = document.getElementById('error-msg');
+
+        // --- Logic ---
+
+        function processInput() {
+            // clear error
+            hideError();
+
+            const value = inputField.value.trim();
+            if (!value) {
+                showError("Please enter some input.");
+                return;
+            }
+
+            // TODO: Implement tool logic here
+            const result = `Processed: ${value}`;
+
+            outputField.value = result;
+        }
+
+        // --- UI Helpers ---
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMsg.classList.add('hidden');
+        }
+
+        // --- Event Listeners ---
+
+        actionBtn.addEventListener('click', processInput);
+
+        // Optional: Run on 'Enter' key in input
+        inputField.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') processInput();
+        });
+
+        // Copy to Clipboard Pattern
+        copyBtn.addEventListener('click', () => {
+            if (!outputField.value) return;
+
+            navigator.clipboard.writeText(outputField.value).then(() => {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => copyBtn.textContent = originalText, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showError("Failed to copy to clipboard.");
+            });
+        });
+
+        // Initialize (if needed)
+        inputField.focus();
+    </script>
+</body>
+
+</html>
