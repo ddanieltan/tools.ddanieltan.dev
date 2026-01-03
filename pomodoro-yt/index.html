@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro YT - Focus with Video</title>
+    <style>
+        /* Base Reset & Layout */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fdfdfd;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header (Standard) */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tool-icon {
+            height: 4em;
+            background-color: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            padding: 2px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* UI Components */
+        .container {
+            background: white;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Inputs */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        /* Video Area */
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            /* 16:9 Aspect Ratio */
+            background-color: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .video-container iframe,
+        .video-container #player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            background: #f0f0f0;
+            text-align: center;
+            padding: 20px;
+        }
+
+        /* Timer Display */
+        .timer-section {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background-color: #eee;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-work {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .status-break {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .time-display {
+            font-size: 5rem;
+            font-weight: 700;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            color: #333;
+            margin: 10px 0;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: #1e293b;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #334155;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e2e8f0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .time-display {
+                font-size: 4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="art.svg" alt="Pomodoro YT Icon" class="tool-icon">
+            <h1>Pomodoro with Youtube</h1>
+        </div>
+        <p class="subtitle">Pomodoro timer sync-ed to your favourite YouTube focus music
+        </p>
+    </header>
+
+    <main class="container">
+        <!-- Configuration -->
+        <section class="settings-grid">
+            <div class="input-group">
+                <label for="youtube-url">YouTube URL</label>
+                <input type="text" id="youtube-url" placeholder="https://www.youtube.com/watch?v=..."
+                    value="https://www.youtube.com/watch?v=_4kHxtiuML0">
+            </div>
+            <div class="input-group">
+                <label for="work-time">Work (min)</label>
+                <input type="number" id="work-time" value="25" min="1" max="120">
+            </div>
+            <div class="input-group">
+                <label for="break-time">Break (min)</label>
+                <input type="number" id="break-time" value="5" min="1" max="60">
+            </div>
+        </section>
+
+        <!-- Video Player -->
+        <div class="video-container">
+            <div id="player"></div>
+            <div id="video-placeholder" class="video-placeholder">
+                <p>Video will load here once valid URL is provided.</p>
+            </div>
+        </div>
+
+        <!-- Timer & Controls -->
+        <section class="timer-section">
+            <div id="status-badge" class="status-badge status-work">Focus Time</div>
+            <div id="time-display" class="time-display">25:00</div>
+
+            <div class="controls">
+                <button id="toggle-btn" class="btn-primary">Start</button>
+                <button id="reset-btn" class="btn-secondary">Reset</button>
+                <button id="switch-mode-btn" class="btn-secondary">Switch to Break</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- State ---
+        let timerInterval = null;
+        let timeLeft = 25 * 60;
+        let isRunning = false;
+        let isWorkMode = true;
+        let player = null;
+        let playerReady = false;
+
+        // --- Elements ---
+        const urlInput = document.getElementById('youtube-url');
+        const workInput = document.getElementById('work-time');
+        const breakInput = document.getElementById('break-time');
+        const timeDisplay = document.getElementById('time-display');
+        const toggleBtn = document.getElementById('toggle-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const switchModeBtn = document.getElementById('switch-mode-btn');
+        const statusBadge = document.getElementById('status-badge');
+        const videoPlaceholder = document.getElementById('video-placeholder');
+
+        // --- YouTube API ---
+
+        // Load API
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            const videoId = extractVideoId(urlInput.value);
+            if (videoId) {
+                createPlayer(videoId);
+            }
+        }
+
+        function createPlayer(videoId) {
+            if (player) {
+                player.loadVideoById(videoId);
+                return;
+            }
+
+            player = new YT.Player('player', {
+                height: '100%',
+                width: '100%',
+                videoId: videoId,
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            playerReady = true;
+            videoPlaceholder.classList.add('hidden');
+        }
+
+        function onPlayerStateChange(event) {
+            // Optional: Sync timer if user manually pauses video?
+            // For now, let's keep the timer logic driving the video, not vice-versa,
+            // to avoid complex circular dependencies for a simple tool.
+        }
+
+        function extractVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // --- Timer Logic ---
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            timeDisplay.textContent = formatTime(timeLeft);
+            document.title = `${formatTime(timeLeft)} - Pomodoro YT`;
+        }
+
+        function tick() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                updateDisplay();
+            } else {
+                completeSession();
+            }
+        }
+
+        function completeSession() {
+            stopTimer();
+            // Play a notification sound or visual cue?
+            // For now, just switch modes automatically or stop?
+            // Standard Pomodoro usually rings and waits for user to start break.
+            // Let's pause video and wait.
+
+            // Toggle mode logic for "next step"
+            switchMode();
+            // But don't auto-start the next timer, let user take a breath.
+        }
+
+        function startTimer() {
+            if (isRunning) return;
+
+            isRunning = true;
+            toggleBtn.textContent = 'Pause';
+            toggleBtn.classList.remove('btn-primary'); // Make it look active/neutral
+            toggleBtn.style.backgroundColor = '#64748b'; // manual override or class
+
+            timerInterval = setInterval(tick, 1000);
+
+            // Logic: Only play video if in Work Mode
+            if (isWorkMode && player && playerReady) {
+                player.playVideo();
+            }
+        }
+
+        function stopTimer() {
+            if (!isRunning) return;
+
+            isRunning = false;
+            toggleBtn.textContent = 'Start';
+            toggleBtn.classList.add('btn-primary');
+            toggleBtn.style.backgroundColor = '';
+
+            clearInterval(timerInterval);
+
+            // Logic: Pause video
+            if (player && playerReady) {
+                player.pauseVideo();
+            }
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                stopTimer();
+            } else {
+                startTimer();
+            }
+        }
+
+        function setMode(work) {
+            isWorkMode = work;
+            stopTimer();
+
+            if (isWorkMode) {
+                timeLeft = parseInt(workInput.value) * 60;
+                statusBadge.textContent = "Focus Time";
+                statusBadge.className = "status-badge status-work";
+                switchModeBtn.textContent = "Switch to Break";
+            } else {
+                timeLeft = parseInt(breakInput.value) * 60;
+                statusBadge.textContent = "Break Time";
+                statusBadge.className = "status-badge status-break";
+                switchModeBtn.textContent = "Switch to Work";
+            }
+            updateDisplay();
+        }
+
+        function switchMode() {
+            setMode(!isWorkMode);
+        }
+
+        function resetTimer() {
+            stopTimer();
+            if (isWorkMode) {
+                timeLeft = parseInt(workInput.value) * 60;
+            } else {
+                timeLeft = parseInt(breakInput.value) * 60;
+            }
+            updateDisplay();
+        }
+
+        // --- Event Listeners ---
+
+        toggleBtn.addEventListener('click', toggleTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        switchModeBtn.addEventListener('click', switchMode);
+
+        // Update time when inputs change
+        workInput.addEventListener('change', () => {
+            if (isWorkMode && !isRunning) resetTimer();
+        });
+        breakInput.addEventListener('change', () => {
+            if (!isWorkMode && !isRunning) resetTimer();
+        });
+
+        // Handle URL changes
+        urlInput.addEventListener('change', () => {
+            const videoId = extractVideoId(urlInput.value);
+            if (videoId) {
+                if (player) {
+                    player.loadVideoById(videoId);
+                    // If we were running and in work mode, keep playing? 
+                    // Or pause to let user confirm? Safe to just load cue.
+                    player.pauseVideo();
+                    if (isRunning) stopTimer(); // Reset state on new video
+                } else {
+                    createPlayer(videoId);
+                }
+            }
+        });
+
+        // Initialize
+        updateDisplay();
+
+    </script>
+</body>
+
+</html>
