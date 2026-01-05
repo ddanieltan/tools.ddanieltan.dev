@@ -302,7 +302,12 @@
                 <label for="warning-time">
                     Warning (sec)
                     <span class="tooltip">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="16" x2="12" y2="12"></line>
+                            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
                         <span class="tooltiptext">Controls when the beeps begin to signal a session is ending.</span>
                     </span>
                 </label>
@@ -492,14 +497,10 @@
             console.log('Session complete. Playing ending sound.');
             SoundManager.playEnding();
             stopTimer();
-            // Play a notification sound or visual cue?
-            // For now, just switch modes automatically or stop?
-            // Standard Pomodoro usually rings and waits for user to start break.
-            // Let's pause video and wait.
 
             // Toggle mode logic for "next step"
             switchMode();
-            // But don't auto-start the next timer, let user take a breath.
+            startTimer();
         }
 
         function startTimer() {
@@ -551,7 +552,7 @@
 
             if (isWorkMode) {
                 timeLeft = parseInt(workInput.value) * 60;
-                statusBadge.textContent = "Focus Time";
+                statusBadge.textContent = "Work Time";
                 statusBadge.className = "status-badge status-work";
                 switchModeBtn.textContent = "Switch to Break";
             } else {
