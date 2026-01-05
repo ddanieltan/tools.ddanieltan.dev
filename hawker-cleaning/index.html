@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="art.svg">
     <title>Hawker Centre Cleaning Schedule</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <style>
         /* Base Reset & Layout */
         * {
@@ -96,17 +97,19 @@
             margin-bottom: 20px;
             border-radius: 6px;
             border: 1px solid #eee;
-            z-index: 1; /* Ensure it stays below headers if sticky */
+            z-index: 1;
+            /* Ensure it stays below headers if sticky */
         }
 
         .legend {
             background: white;
             padding: 10px;
             border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
             font-size: 12px;
             line-height: 1.5;
         }
+
         .legend i {
             width: 10px;
             height: 10px;
@@ -126,7 +129,7 @@
             margin-top: 20px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        
+
         .details-header {
             margin-bottom: 16px;
             border-bottom: 1px solid #f1f5f9;
@@ -168,9 +171,17 @@
             font-weight: 500;
         }
 
-        .highlight-red { color: #ef4444 !important; }
-        .highlight-orange { color: #f97316 !important; }
-        .highlight-green { color: #22c55e !important; }
+        .highlight-red {
+            color: #ef4444 !important;
+        }
+
+        .highlight-orange {
+            color: #f97316 !important;
+        }
+
+        .highlight-green {
+            color: #22c55e !important;
+        }
 
         .details-desc {
             background-color: #f8fafc;
@@ -247,7 +258,7 @@
             .container {
                 padding: 15px;
             }
-            
+
             h1 {
                 font-size: 1.8rem;
             }
@@ -255,7 +266,7 @@
             #map {
                 height: 300px;
             }
-            
+
             .details-card {
                 padding: 16px;
             }
@@ -279,7 +290,8 @@
             <img src="art.svg" alt="Tool Icon" class="tool-icon">
             <h1>Hawker Cleaning Schedule</h1>
         </div>
-        <p class="subtitle">View upcoming cleaning schedules for Hawker Centres in Singapore. Data provided by data.gov.sg.</p>
+        <p class="subtitle">View upcoming cleaning schedules for Hawker Centres in Singapore. Data provided by <a
+                href="https://data.gov.sg/datasets/d_bda4baa634dd1cc7a6c7cad5f19e2d68/view">data.gov.sg</a>.</p>
     </header>
 
     <main class="container">
@@ -292,19 +304,19 @@
 
         <!-- Content Area -->
         <div id="loading-indicator" class="loading hidden">Loading data...</div>
-        
+
         <div id="map"></div>
-        
+
         <!-- Details Section -->
         <section id="details-section" class="details-card">
             <div id="details-placeholder" class="loading">Click a hawker centre on the map to see more details.</div>
-            
+
             <div id="details-content-wrapper" class="hidden">
                 <div class="details-header">
                     <h2 id="d-name" class="details-title">Centre Name</h2>
                     <div id="d-address" class="details-subtitle">Address</div>
                 </div>
-                
+
                 <div class="details-media">
                     <img id="d-photo" src="" alt="Hawker Centre Photo" class="details-photo">
                     <div class="details-content">
@@ -326,21 +338,22 @@
                                 <span id="d-market-stalls">-</span>
                             </div>
                         </div>
-                        
+
                         <a id="d-google-3d" href="#" target="_blank" class="btn-link hidden">View Google 3D View</a>
                     </div>
                 </div>
 
                 <div class="detail-item">
-                     <label>Description</label>
-                     <div id="d-desc" class="details-desc"></div>
+                    <label>Description</label>
+                    <div id="d-desc" class="details-desc"></div>
                 </div>
             </div>
         </section>
     </main>
 
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <script>
         // --- Configuration ---
@@ -368,7 +381,7 @@
             hideError();
             loadingIndicator.classList.remove('hidden');
             recordCount.textContent = '';
-            
+
             // Reset Details to placeholder
             detailsPlaceholder.classList.remove('hidden');
             detailsContentWrapper.classList.add('hidden');
@@ -379,7 +392,7 @@
                     throw new Error(`Failed to fetch data (Status: ${response.status})`);
                 }
                 const data = await response.json();
-                
+
                 if (data.success && data.result && data.result.records) {
                     recordCount.textContent = `${data.result.records.length} records found`;
                     renderMap(data.result.records);
@@ -407,7 +420,7 @@
                 subdomains: 'abcd',
                 maxZoom: 20
             }).addTo(map);
-            
+
             // Legend
             const legend = L.control({position: 'bottomright'});
             legend.onAdd = function (map) {
@@ -434,7 +447,7 @@
         function getNextCleaning(record) {
             const now = new Date();
             // Reset time to start of day for accurate day comparison
-            now.setHours(0,0,0,0); 
+            now.setHours(0, 0, 0, 0);
 
             let dates = [];
             // Check all 4 quarters
@@ -442,13 +455,13 @@
                 const startStr = record[`${q}_cleaningstartdate`];
                 const date = parseDate(startStr);
                 if (date) {
-                    dates.push({ date: date, raw: startStr, q: q });
+                    dates.push({date: date, raw: startStr, q: q});
                 }
             });
-            
+
             // Filter only future dates or today
             const futureDates = dates.filter(d => d.date >= now);
-            
+
             // Sort by date ascending
             futureDates.sort((a, b) => a.date - b.date);
 
@@ -456,8 +469,8 @@
 
             const next = futureDates[0];
             const diffTime = Math.abs(next.date - now);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-            
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
             return {
                 dateObj: next.date,
                 dateStr: next.raw,
@@ -491,7 +504,7 @@
                     const nextClean = getNextCleaning(record);
                     const daysLeft = nextClean ? nextClean.daysLeft : null;
                     const color = getColor(daysLeft);
-                    
+
                     // Marker Config
                     const marker = L.circleMarker([lat, lon], {
                         radius: 8,
@@ -513,7 +526,7 @@
                     marker.on('click', () => {
                         showDetails(record, nextClean);
                     });
-                    
+
                     markers.push(marker);
                     bounds.extend([lat, lon]);
                 }
@@ -521,7 +534,7 @@
 
             // Fit map to bounds if we have markers
             if (markers.length > 0) {
-                map.fitBounds(bounds, { padding: [50, 50] });
+                map.fitBounds(bounds, {padding: [50, 50]});
             }
         }
 
@@ -555,18 +568,18 @@
             const daysEl = document.getElementById('d-days-left');
 
             // Reset classes
-            daysEl.className = ''; 
+            daysEl.className = '';
 
             if (nextClean) {
                 dateEl.textContent = nextClean.dateStr;
-                
+
                 const days = nextClean.daysLeft;
                 if (days === 0) {
                     daysEl.textContent = 'Today';
                     daysEl.classList.add('highlight-red');
                 } else {
                     daysEl.textContent = `${days} day${days !== 1 ? 's' : ''}`;
-                    
+
                     // Color coding
                     if (days <= 7) daysEl.classList.add('highlight-red');
                     else if (days <= 30) daysEl.classList.add('highlight-orange');
@@ -580,9 +593,9 @@
             // Show content, hide placeholder
             detailsPlaceholder.classList.add('hidden');
             detailsContentWrapper.classList.remove('hidden');
-            
+
             // Smooth scroll to details
-            detailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            detailsSection.scrollIntoView({behavior: 'smooth', block: 'start'});
         }
 
         // --- Helpers ---
