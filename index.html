@@ -1,20 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="art.svg">
-    <title>Static Web Tools</title>
+    <title>tools.ddanieltan.dev</title>
     <style>
         /* Base Reset & Layout */
-        * {
-            box-sizing: border-box;
-        }
-
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             background-color: #fdfdfd;
@@ -38,14 +34,6 @@
             gap: 12px;
         }
 
-        .tool-icon {
-            height: 5em;
-            background-color: white;
-            border: 2px solid #1e293b;
-            border-radius: 8px;
-            padding: 5px;
-        }
-
         h1 {
             margin: 0;
             font-size: 2.5rem;
@@ -63,76 +51,8 @@
         .container {
             background: white;
             padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #555;
-        }
-
-        input[type="text"],
-        textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 16px;
-        }
-
-        button {
-            background-color: #333;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.2s;
-        }
-
-        button:hover {
-            background-color: #555;
-        }
-
-        button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .result-area {
-            margin-top: 20px;
-        }
-
-        /* Utilities */
-        .hidden {
-            display: none;
-        }
-
-        .error {
-            color: #d32f2f;
-            background: #ffebee;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 15px;
-        }
-
-        /* Mobile Adjustments */
-        @media (max-width: 600px) {
-            body {
-                padding: 15px;
-            }
-
-            .container {
-                padding: 15px;
-            }
-        }
-    
+        
         /* Tool Grid Styles */
         .tool-grid {
             display: grid;
@@ -202,74 +122,81 @@
             display: flex;
             justify-content: space-between;
         }
-        
-        /* Overrides for Index Page */
-        body { max-width: 1000px; }
-    
+
+        @media (max-width: 600px) {
+            body { padding: 15px; }
+            .container { padding: 15px; }
+        }
     </style>
 </head>
-
 <body>
-
-    
     <header>
         <div class="brand">
-            <h1>Static Web Tools</h1>
+            <h1>tools.ddanieltan.dev</h1>
         </div>
-        <p class="subtitle">A collection of lightweight, self-contained web tools.</p>
+        <p class="subtitle">
+  Lightweight tools built with LLM assistance by 
+  <a href="https://github.com/ddanieltan">@ddanieltan</a>. 
+  Inspired by <a href="https://tools.simonwillison.net">tools.simonwillison.net</a>.
+</p>
     </header>
-    
 
-    <main class="container"><div class="tool-grid">
-
-        <a href="/hawker-cleaning/" class="tool-card">
-            <div class="tool-card-header">
-                <img src="/hawker-cleaning/art.svg" alt="" class="tool-card-icon">
-                <h2>Hawker Centre Cleaning Schedule</h2>
-            </div>
-            <p>View upcoming cleaning schedules for Hawker Centres in Singapore. Data provided by data.gov.sg.</p>
-            <div class="tool-card-footer">
-                <span>Updated: 2026-01-05</span>
-            </div>
-        </a>
-        
-        <a href="/pomodoro-yt/" class="tool-card">
-            <div class="tool-card-header">
-                <img src="/pomodoro-yt/art.svg" alt="" class="tool-card-icon">
-                <h2>Pomodoro YT - Focus with Video</h2>
-            </div>
-            <p>Pomodoro timer sync-ed to your favourite YouTube focus music</p>
-            <div class="tool-card-footer">
-                <span>Updated: 2026-01-05</span>
-            </div>
-        </a>
-        
-        <a href="/emoji/" class="tool-card">
-            <div class="tool-card-header">
-                <img src="/emoji/art.svg" alt="" class="tool-card-icon">
-                <h2>Emoji Identifier</h2>
-            </div>
-            <p>Paste text below to identify all emojis.</p>
-            <div class="tool-card-footer">
-                <span>Updated: 2026-01-04</span>
-            </div>
-        </a>
-        
-        <a href="/mondrian/" class="tool-card">
-            <div class="tool-card-header">
-                <img src="/mondrian/art.svg" alt="" class="tool-card-icon">
-                <h2>24×24 Mondrian Generator</h2>
-            </div>
-            <p>Generative art in the style of Piet Mondrian. Click on segments to cycle colors.</p>
-            <div class="tool-card-footer">
-                <span>Updated: 2026-01-04</span>
-            </div>
-        </a>
-        </div></main>
-
-    <script>
-        // Index page logic can go here
-    </script>
+    <main class="container">
+        <div class="tool-grid">
+            
+            <a href="/pomodoro-yt/" class="tool-card">
+                <div class="tool-card-header">
+                    
+                    <img src="/pomodoro-yt/art.svg" alt="" class="tool-card-icon">
+                    
+                    <h2>Pomodoro YT - Focus with Video</h2>
+                </div>
+                <p>Pomodoro timer sync-ed to your favourite YouTube focus music.</p>
+                <div class="tool-card-footer">
+                    <span>Updated: 2026-01-08</span>
+                </div>
+            </a>
+            
+            <a href="/hawker-cleaning/" class="tool-card">
+                <div class="tool-card-header">
+                    
+                    <img src="/hawker-cleaning/art.svg" alt="" class="tool-card-icon">
+                    
+                    <h2>Hawker Centre Cleaning Schedule</h2>
+                </div>
+                <p>View upcoming cleaning schedules for Hawker Centres in Singapore. Data provided by data.gov.sg.</p>
+                <div class="tool-card-footer">
+                    <span>Updated: 2026-01-05</span>
+                </div>
+            </a>
+            
+            <a href="/emoji/" class="tool-card">
+                <div class="tool-card-header">
+                    
+                    <img src="/emoji/art.svg" alt="" class="tool-card-icon">
+                    
+                    <h2>Emoji Identifier</h2>
+                </div>
+                <p>Paste text below to identify all emojis.</p>
+                <div class="tool-card-footer">
+                    <span>Updated: 2026-01-04</span>
+                </div>
+            </a>
+            
+            <a href="/mondrian/" class="tool-card">
+                <div class="tool-card-header">
+                    
+                    <img src="/mondrian/art.svg" alt="" class="tool-card-icon">
+                    
+                    <h2>24×24 Mondrian Generator</h2>
+                </div>
+                <p>Generative art in the style of Piet Mondrian. Click on segments to cycle colors.</p>
+                <div class="tool-card-footer">
+                    <span>Updated: 2026-01-04</span>
+                </div>
+            </a>
+            
+        </div>
+    </main>
 </body>
-
 </html>
