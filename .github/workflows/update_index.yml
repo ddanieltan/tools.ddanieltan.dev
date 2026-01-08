@@ -19,13 +19,11 @@ jobs:
         with:
           fetch-depth: 0 # Need full history for git log dates
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
 
       - name: Run generation script
-        run: python generate_index.py
+        run: uv run build_index.py
 
       - name: Commit and push if changed
         run: |
