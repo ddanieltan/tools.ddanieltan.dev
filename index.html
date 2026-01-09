@@ -28,10 +28,12 @@
             padding-bottom: 20px;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .tool-icon {
+            height: 4em;
+            background-color: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            padding: 2px;
         }
 
         h1 {
@@ -120,7 +122,8 @@
             font-size: 0.75rem;
             color: #94a3b8;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 4px;
         }
 
         @media (max-width: 600px) {
@@ -131,7 +134,8 @@
 </head>
 <body>
     <header>
-        <div class="brand">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="art.svg" alt="tools.ddanieltan.dev icon" class="tool-icon">
             <h1>tools.ddanieltan.dev</h1>
         </div>
         <p class="subtitle">
@@ -149,11 +153,12 @@
                     
                     <img src="/pomodoro-yt/art.svg" alt="" class="tool-card-icon">
                     
-                    <h2>Pomodoro YT - Focus with Video</h2>
+                    <h2>Pomodoro with Youtube</h2>
                 </div>
                 <p>Pomodoro timer sync-ed to your favourite YouTube focus music.</p>
                 <div class="tool-card-footer">
                     <span>Updated: 2026-01-08</span>
+                    <span>Created: 2026-01-03</span>
                 </div>
             </a>
             
@@ -167,6 +172,7 @@
                 <p>View upcoming cleaning schedules for Hawker Centres in Singapore. Data provided by data.gov.sg.</p>
                 <div class="tool-card-footer">
                     <span>Updated: 2026-01-05</span>
+                    <span>Created: 2026-01-05</span>
                 </div>
             </a>
             
@@ -180,6 +186,7 @@
                 <p>Paste text below to identify all emojis.</p>
                 <div class="tool-card-footer">
                     <span>Updated: 2026-01-04</span>
+                    <span>Created: 2026-01-02</span>
                 </div>
             </a>
             
@@ -193,6 +200,7 @@
                 <p>Generative art in the style of Piet Mondrian. Click on segments to cycle colors.</p>
                 <div class="tool-card-footer">
                     <span>Updated: 2026-01-04</span>
+                    <span>Created: 2026-01-02</span>
                 </div>
             </a>
             

@@ -32,12 +32,6 @@
             padding-bottom: 20px;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
         .tool-icon {
             height: 5em;
             width: 5em;
@@ -191,12 +185,35 @@
                 margin-top: 10px;
             }
         }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom 0.2s;
+        }
+
+        footer a:hover {
+            border-bottom: 1px solid #64748b;
+        }
     </style>
 </head>
 
 <body>
     <header>
-        <div class="brand">
+        <div style="display: flex; align-items: center; gap: 12px;">
             <img src="art.svg" alt="App Icon" class="tool-icon">
             <h1>Emoji Identifier</h1>
         </div>
@@ -211,6 +228,11 @@
             <div class="no-results">No emojis detected yet</div>
         </div>
     </main>
+
+    <footer>
+        <a href="/">Home</a>
+        <span>Built by <a href="https://github.com/ddanieltan">@ddanieltan</a></span>
+    </footer>
 
     <script type="module">
         let emojiData = {};

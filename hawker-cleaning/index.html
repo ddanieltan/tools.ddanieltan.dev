@@ -34,12 +34,6 @@
             padding-bottom: 20px;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
         .tool-icon {
             height: 5em;
             background-color: white;
@@ -280,13 +274,36 @@
                 width: 100%;
             }
         }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom 0.2s;
+        }
+
+        footer a:hover {
+            border-bottom: 1px solid #64748b;
+        }
     </style>
 </head>
 
 <body>
 
     <header>
-        <div class="brand">
+        <div style="display: flex; align-items: center; gap: 12px;">
             <img src="art.svg" alt="Tool Icon" class="tool-icon">
             <h1>Hawker Cleaning Schedule</h1>
         </div>
@@ -350,6 +367,11 @@
             </div>
         </section>
     </main>
+
+    <footer>
+        <a href="/">Home</a>
+        <span>Built by <a href="https://github.com/ddanieltan">@ddanieltan</a></span>
+    </footer>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

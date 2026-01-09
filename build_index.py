@@ -47,12 +47,6 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
             padding-bottom: 20px;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
         .tool-icon {
             height: 4em;
             background-color: white;
@@ -147,7 +141,8 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
             font-size: 0.75rem;
             color: #94a3b8;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 4px;
         }
 
         @media (max-width: 600px) {
@@ -158,7 +153,7 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
     <header>
-        <div class="brand">
+        <div style="display: flex; align-items: center; gap: 12px;">
             <img src="art.svg" alt="tools.ddanieltan.dev icon" class="tool-icon">
             <h1>tools.ddanieltan.dev</h1>
         </div>
@@ -184,6 +179,7 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
                 <p>{{ tool.description }}</p>
                 <div class="tool-card-footer">
                     <span>Updated: {{ tool.date.strftime('%Y-%m-%d') }}</span>
+                    <span>Created: {{ tool.created_date.strftime('%Y-%m-%d') }}</span>
                 </div>
             </a>
             {% endfor %}
@@ -192,21 +188,25 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 </body>
 </html>"""
 
-def get_git_date(path):
+def get_git_dates(path):
     try:
         result = subprocess.run(
-            ['git', 'log', '-1', '--format=%cI', str(path)],
+            ['git', 'log', '--format=%cI', '--', str(path)],
             capture_output=True,
             text=True,
             check=False
         )
         if result.returncode == 0 and result.stdout.strip():
-            return datetime.datetime.fromisoformat(result.stdout.strip())
+            lines = result.stdout.strip().split('\n')
+            return (
+                datetime.datetime.fromisoformat(lines[0]), # Latest
+                datetime.datetime.fromisoformat(lines[-1]) # Earliest
+            )
     except Exception as e:
-        print(f"Warning: Could not get git date for {path}: {e}")
+        print(f"Warning: Could not get git dates for {path}: {e}")
     
-    timestamp = os.path.getmtime(path)
-    return datetime.datetime.fromtimestamp(timestamp).astimezone()
+    dt = datetime.datetime.fromtimestamp(os.path.getmtime(path)).astimezone()
+    return dt, dt
 
 def extract_tool_info(dir_path):
     index_path = dir_path / 'index.html'
@@ -219,8 +219,11 @@ def extract_tool_info(dir_path):
         'name': dir_path.name.replace('-', ' ').title(),
         'description': '',
         'icon': 'art.svg' if (dir_path / 'art.svg').exists() else None,
-        'date': get_git_date(dir_path)
     }
+
+    last_date, first_date = get_git_dates(dir_path)
+    info['date'] = last_date
+    info['created_date'] = first_date
 
     try:
         content = index_path.read_text(encoding='utf-8')

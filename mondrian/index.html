@@ -32,12 +32,6 @@
             padding-bottom: 20px;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
         .tool-icon {
             height: 5em;
             width: 5em;
@@ -217,13 +211,36 @@
             width: 1.25em;
             height: 1.25em;
         }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom 0.2s;
+        }
+
+        footer a:hover {
+            border-bottom: 1px solid #64748b;
+        }
     </style>
 </head>
 
 <body>
 
     <header>
-        <div class="brand">
+        <div style="display: flex; align-items: center; gap: 12px;">
             <!-- The script will inject the SVG into this div -->
             <div id="headerArt" class="tool-icon" style="overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 0;"></div>
             <h1>24×24 Mondrian Generator</h1>
@@ -304,6 +321,11 @@
             </div>
         </div>
     </main>
+
+    <footer>
+        <a href="/">Home</a>
+        <span>Built by <a href="https://github.com/ddanieltan">@ddanieltan</a></span>
+    </footer>
 
     <script>
         // State
