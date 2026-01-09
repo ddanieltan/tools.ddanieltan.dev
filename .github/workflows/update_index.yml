@@ -33,6 +33,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: update index.html"
+            git commit -m "CI/CD: rebuild index.html"
             git push
           fi
