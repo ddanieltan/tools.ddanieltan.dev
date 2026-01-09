@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bento Box Meal Planner</title>
+    <style>
+        /* Base Reset & Layout */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fdfdfd;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tool-icon {
+            height: 4em;
+            background-color: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* Main Grid */
+        .app-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Bento Box Area */
+        .bento-editor {
+            background: white;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .layout-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .layout-icon-btn {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            cursor: pointer;
+            padding: 8px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            color: #94a3b8;
+        }
+
+        .layout-icon-btn:hover {
+            border-color: #94a3b8;
+            background: #f8fafc;
+            color: #64748b;
+        }
+
+        .layout-icon-btn.active {
+            border-color: #1e293b;
+            background: #1e293b;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .layout-svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Bento Box Container - Aspect Ratio 4:3ish */
+        .bento-box {
+            aspect-ratio: 4/3;
+            background: #f8fafc;
+            border: 8px solid #334155;
+            border-radius: 20px;
+            padding: 8px;
+            display: grid;
+            gap: 8px;
+            /* Default Layout (4-grid) */
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        /* Sections */
+        .bento-section {
+            background: white;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .bento-section:hover {
+            border-color: #94a3b8;
+            background-color: #f1f5f9;
+        }
+
+        .bento-section.filled {
+            border-style: solid;
+            border-color: transparent;
+            background-color: #fff;
+            box-shadow: inset 0 0 0 1px #e2e8f0;
+        }
+
+        /* Layout Variations */
+        .layout-classic {
+            grid-template-areas:
+                "main main"
+                "side1 side2";
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 2fr 1fr;
+        }
+
+        .layout-balanced {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        .layout-simple {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+
+        /* Section Content */
+        .section-placeholder {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+
+        .plus-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .food-display {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #8df0f7;
+        }
+
+        .food-name {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .food-meta {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #e2e8f0;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            line-height: 22px;
+            text-align: center;
+            color: #ef4444;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .remove-btn:hover {
+            background: #fee2e2;
+        }
+
+        /* Sidebar / Food Picker */
+        .sidebar {
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .nutrition-card {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .nutrition-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        .nutri-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .nutri-row:last-child {
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nutri-total {
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        /* Food Picker Modal (overlaid on mobile, inline on desktop if space) */
+        .picker-search {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .picker-select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background-color: white;
+        }
+
+        .food-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 400px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .food-item {
+            padding: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .food-item:hover {
+            background: #f8fafc;
+        }
+
+        .food-item-name {
+            font-weight: 500;
+            display: block;
+        }
+
+        .food-item-cal {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+                /* Mobile adjustments */
+
+                @media (max-width: 768px) {
+
+                    .app-container {
+
+                        grid-template-columns: 1fr;
+
+                    }
+
+                    .sidebar {
+
+                        order: 2;
+
+                    }
+
+                }
+
+        
+
+                footer {
+
+                    margin-top: 40px;
+
+                    padding-top: 20px;
+
+                    border-top: 1px solid #eee;
+
+                    display: flex;
+
+                    justify-content: center;
+
+                    gap: 20px;
+
+                    align-items: center;
+
+                    color: #64748b;
+
+                    font-size: 0.9rem;
+
+                }
+
+        
+
+                footer a {
+
+                    color: #64748b;
+
+                    text-decoration: none;
+
+                    border-bottom: 1px solid transparent;
+
+                    transition: border-bottom 0.2s;
+
+                }
+
+        
+
+                footer a:hover {
+
+                    border-bottom: 1px solid #64748b;
+
+                }
+
+            </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="art.svg" alt="Bento Icon" class="tool-icon">
+            <h1>Bento Box Meal Planner</h1>
+        </div>
+        <p class="subtitle">Design your meal and track nutrition. Choose a layout, then click sections to add food.</p>
+    </header>
+
+    <main class="app-container">
+        <!-- Left Column: Bento Builder -->
+        <section class="bento-editor">
+            <div class="layout-selector">
+                <!-- Balanced: 2x2 Grid -->
+                <button class="layout-icon-btn active" onclick="setLayout('balanced')" title="Balanced (4 items)">
+                    <svg viewBox="0 0 100 100" class="layout-svg">
+                        <rect x="5" y="5" width="90" height="90" rx="10" stroke-width="8" />
+                        <line x1="50" y1="5" x2="50" y2="95" />
+                        <line x1="5" y1="50" x2="95" y2="50" />
+                    </svg>
+                </button>
+
+                <!-- Classic: Main (Top 2/3) + 2 Sides (Bottom 1/3) -->
+                <button class="layout-icon-btn" onclick="setLayout('classic')" title="Classic (Main + 2 Sides)">
+                    <svg viewBox="0 0 100 100" class="layout-svg">
+                        <rect x="5" y="5" width="90" height="90" rx="10" stroke-width="8" />
+                        <line x1="5" y1="65" x2="95" y2="65" />
+                        <line x1="50" y1="65" x2="50" y2="95" />
+                    </svg>
+                </button>
+
+                <!-- Simple: Top + Bottom -->
+                <button class="layout-icon-btn" onclick="setLayout('simple')" title="Simple (2 items)">
+                    <svg viewBox="0 0 100 100" class="layout-svg">
+                        <rect x="5" y="5" width="90" height="90" rx="10" stroke-width="8" />
+                        <line x1="5" y1="50" x2="95" y2="50" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="bento-box" class="bento-box layout-balanced">
+                <!-- Sections injected by JS -->
+            </div>
+        </section>
+
+        <!-- Right Column: Stats & Picker -->
+        <aside class="sidebar">
+            <div class="nutrition-card">
+                <h3>Nutrition Totals</h3>
+                <div class="nutri-row">
+                    <span>Calories</span>
+                    <span class="nutri-total" id="total-cals">0 kcal</span>
+                </div>
+                <div class="nutri-row">
+                    <span>Protein</span>
+                    <span class="nutri-total" id="total-prot">0g</span>
+                </div>
+                <div class="nutri-row">
+                    <span>Carbs</span>
+                    <span class="nutri-total" id="total-carbs">0g</span>
+                </div>
+                <div class="nutri-row">
+                    <span>Fat</span>
+                    <span class="nutri-total" id="total-fat">0g</span>
+                </div>
+            </div>
+
+            <div id="picker-container">
+                <h3>Add Food</h3>
+                <p id="picker-status" style="font-size: 0.9rem; color: #64748b;">Select a box section first.</p>
+
+                <div id="picker-ui" class="hidden">
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <select id="filter-category" class="picker-select">
+                            <option value="">All Categories</option>
+                        </select>
+                        <select id="filter-meal" class="picker-select">
+                            <option value="">All Meals</option>
+                        </select>
+                    </div>
+                    <input type="text" id="food-search" class="picker-search" placeholder="Search foods...">
+                    <div id="food-list" class="food-list">
+                        <!-- Items injected here -->
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <footer>
+        <a href="/">Home</a>
+        <span>Built by <a href="https://github.com/ddanieltan">@ddanieltan</a></span>
+    </footer>
+
+    <script>
+        // --- State ---
+        let allFoods = [];
+        let boxState = {}; // { sectionId: foodObject }
+        let currentLayout = 'balanced';
+        let activeSectionId = null;
+
+        // --- Init ---
+        async function init() {
+            try {
+                const response = await fetch('daily_food_nutrition_dataset.csv');
+                if (!response.ok) throw new Error("Failed to load CSV");
+                const text = await response.text();
+                allFoods = parseCSV(text);
+                console.log(`Loaded ${allFoods.length} foods`);
+
+                populateFilters();
+                // Initial render
+                setLayout('balanced');
+            } catch (e) {
+                console.error(e);
+                alert("Error loading food data: " + e.message);
+            }
+        }
+
+        // --- CSV Parser ---
+        function parseCSV(text) {
+            // Simple robust CSV parser handling quoted fields
+            const lines = text.split('\n').filter(l => l.trim());
+            const headers = parseCSVLine(lines[0]);
+
+            return lines.slice(1).map(line => {
+                const values = parseCSVLine(line);
+                const obj = {};
+                headers.forEach((h, i) => {
+                    // Clean headers: "Calories (kcal)" -> "calories" 
+                    let key = h.toLowerCase().split(' ')[0];
+                    if (key === 'food_item') key = 'name';
+
+                    let val = values[i];
+                    // Convert numbers
+                    if (!isNaN(parseFloat(val)) && isFinite(val)) {
+                        val = parseFloat(val);
+                    }
+                    obj[key] = val;
+                });
+                // Store raw for details if needed
+                obj._raw = values;
+                return obj;
+            });
+        }
+
+        function parseCSVLine(text) {
+            const result = [];
+            let start = 0;
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                if (text[i] === '"') {
+                    inQuotes = !inQuotes;
+                } else if (text[i] === ',' && !inQuotes) {
+                    let val = text.substring(start, i).trim();
+                    if (val.startsWith('"') && val.endsWith('"')) val = val.slice(1, -1);
+                    result.push(val);
+                    start = i + 1;
+                }
+            }
+            let lastVal = text.substring(start).trim();
+            if (lastVal.startsWith('"') && lastVal.endsWith('"')) lastVal = lastVal.slice(1, -1);
+            result.push(lastVal);
+            return result;
+        }
+
+        // --- Layout Logic ---
+        const layouts = {
+            balanced: ['s1', 's2', 's3', 's4'],
+            classic: ['main', 'side1', 'side2'],
+            simple: ['top', 'bottom']
+        };
+
+        const sectionNames = {
+            s1: "Top Left", s2: "Top Right", s3: "Bottom Left", s4: "Bottom Right",
+            main: "Main Dish", side1: "Side 1", side2: "Side 2",
+            top: "Top Half", bottom: "Bottom Half"
+        };
+
+        const sectionUnits = {
+            // Balanced (4 quarters) - 1 unit each
+            s1: 1, s2: 1, s3: 1, s4: 1,
+            // Classic (1 half, 2 quarters) - Main is 2 units
+            main: 2, side1: 1, side2: 1,
+            // Simple (2 halves) - Both are 2 units
+            top: 2, bottom: 2
+        };
+
+        window.setLayout = function (layout) {
+            currentLayout = layout;
+
+            // Update buttons
+            document.querySelectorAll('.layout-icon-btn').forEach(b => b.classList.remove('active'));
+            const activeBtn = document.querySelector(`button[onclick="setLayout('${layout}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // Update Grid Class
+            const box = document.getElementById('bento-box');
+            box.className = `bento-box layout-${layout}`;
+            box.innerHTML = '';
+
+            // Generate Sections
+            layouts[layout].forEach(id => {
+                const div = document.createElement('div');
+                div.className = 'bento-section';
+                div.dataset.id = id;
+                div.onclick = (e) => handleSectionClick(id, e);
+
+                // If section has data, render it
+                if (boxState[id]) {
+                    renderFoodInSection(div, boxState[id]);
+                } else {
+                    const units = sectionUnits[id];
+                    div.innerHTML = `
+                        <span class="plus-icon">+</span>
+                        <span class="section-placeholder">${sectionNames[id]}</span>
+                        ${units > 1 ? '<span style="font-size:0.75rem; color:#64748b; margin-top:4px">(2x Portion)</span>' : ''}
+                    `;
+                }
+
+                // Area mapping for classic layout
+                if (layout === 'classic') {
+                    div.style.gridArea = id;
+                }
+
+                box.appendChild(div);
+            });
+
+            // Reset active picker if the section no longer exists
+            if (!layouts[layout].includes(activeSectionId)) {
+                closePicker();
+            }
+
+            calcTotals();
+        };
+
+        function handleSectionClick(id, e) {
+            // If clicking remove button, don't open picker
+            if (e.target.classList.contains('remove-btn')) return;
+
+            activeSectionId = id;
+
+            // Highlight active section
+            document.querySelectorAll('.bento-section').forEach(s => s.style.borderColor = '#cbd5e1');
+            const activeEl = document.querySelector(`.bento-section[data-id="${id}"]`);
+            if (activeEl) activeEl.style.borderColor = '#1e293b';
+
+            // Open Picker
+            openPicker();
+        }
+
+        function removeFood(id) {
+            delete boxState[id];
+            setLayout(currentLayout); // Re-render
+            calcTotals();
+            closePicker();
+        }
+
+        function renderFoodInSection(el, food) {
+            const id = el.dataset.id;
+            const units = sectionUnits[id] || 1;
+            const multLabel = units > 1 ? `<span style="background:#e2e8f0; color:#475569; padding:2px 6px; border-radius:4px; font-size:0.7rem; margin-top:4px">2x Portion</span>` : '';
+
+            el.classList.add('filled');
+            el.innerHTML = `
+                <div class="remove-btn" onclick="removeFood('${id}')">×</div>
+                <div class="food-display">
+                    <div class="food-name">${food.name}</div>
+                    <div class="food-meta">${Math.round(food.calories * units)} kcal | ${Math.round(food.protein * units)}g P</div>
+                    ${multLabel}
+                </div>
+            `;
+        }
+
+        // --- Picker Logic ---
+        const pickerStatus = document.getElementById('picker-status');
+        const pickerUi = document.getElementById('picker-ui');
+        const foodList = document.getElementById('food-list');
+        const searchInput = document.getElementById('food-search');
+        const filterCategory = document.getElementById('filter-category');
+        const filterMeal = document.getElementById('filter-meal');
+
+        function populateFilters() {
+            const categories = new Set();
+            const meals = new Set();
+
+            allFoods.forEach(f => {
+                // Filter out categories with ')' and Meal_Type '20'
+                if (f.category && !f.category.includes(')')) categories.add(f.category);
+                if (f.meal_type && String(f.meal_type) !== '20') meals.add(f.meal_type);
+            });
+
+            Array.from(categories).sort().forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                filterCategory.appendChild(opt);
+            });
+
+            Array.from(meals).sort().forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                filterMeal.appendChild(opt);
+            });
+        }
+
+        function openPicker() {
+            pickerStatus.classList.add('hidden');
+            pickerUi.classList.remove('hidden');
+            searchInput.value = '';
+            filterCategory.value = '';
+            filterMeal.value = '';
+            searchInput.focus();
+            filterFoods();
+        }
+
+        function closePicker() {
+            activeSectionId = null;
+            pickerStatus.classList.remove('hidden');
+            pickerUi.classList.add('hidden');
+            pickerStatus.textContent = "Select a box section to add food.";
+            // Reset borders
+            document.querySelectorAll('.bento-section').forEach(s => s.style.borderColor = '#cbd5e1');
+        }
+
+        function filterFoods() {
+            const term = searchInput.value.toLowerCase();
+            const cat = filterCategory.value;
+            const meal = filterMeal.value;
+
+            const filtered = allFoods.filter(f => {
+                const matchesTerm = f.name.toLowerCase().includes(term);
+                const matchesCat = !cat || f.category === cat;
+                const matchesMeal = !meal || f.meal_type === meal;
+                return matchesTerm && matchesCat && matchesMeal;
+            });
+
+            renderFoodList(filtered.slice(0, 50));
+        }
+
+        searchInput.addEventListener('input', filterFoods);
+        filterCategory.addEventListener('change', filterFoods);
+        filterMeal.addEventListener('change', filterFoods);
+
+        function renderFoodList(items) {
+            foodList.innerHTML = '';
+            items.forEach(food => {
+                const div = document.createElement('div');
+                div.className = 'food-item';
+                div.innerHTML = `
+                    <span class="food-item-name">${food.name}</span>
+                    <span class="food-item-cal">${food.calories} kcal • P: ${food.protein}g • C: ${food.carbohydrates}g • F: ${food.fat}g</span>
+                `;
+                div.onclick = () => selectFood(food);
+                foodList.appendChild(div);
+            });
+        }
+
+        function selectFood(food) {
+            if (!activeSectionId) return;
+            boxState[activeSectionId] = food;
+            setLayout(currentLayout); // Re-render box
+            calcTotals();
+        }
+
+        // --- Totals Logic ---
+        function calcTotals() {
+            // Only sum items present in CURRENT layout
+            const currentSectionIds = layouts[currentLayout];
+
+            let cals = 0, prot = 0, carbs = 0, fat = 0;
+
+            currentSectionIds.forEach(id => {
+                const item = boxState[id];
+                if (item) {
+                    const units = sectionUnits[id] || 1;
+                    cals += (item.calories || 0) * units;
+                    prot += (item.protein || 0) * units;
+                    carbs += (item.carbohydrates || 0) * units;
+                    fat += (item.fat || 0) * units;
+                }
+            });
+
+            document.getElementById('total-cals').textContent = Math.round(cals) + ' kcal';
+            document.getElementById('total-prot').textContent = Math.round(prot) + 'g';
+            document.getElementById('total-carbs').textContent = Math.round(carbs) + 'g';
+            document.getElementById('total-fat').textContent = Math.round(fat) + 'g';
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+
+</html>
