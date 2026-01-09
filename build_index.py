@@ -52,6 +52,14 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
             align-items: center;
             gap: 12px;
         }
+        
+        .tool-icon {
+            height: 4em;
+            background-color: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            padding: 2px;
+        }
 
         h1 {
             margin: 0;
@@ -151,6 +159,7 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <body>
     <header>
         <div class="brand">
+            <img src="art.svg" alt="tools.ddanieltan.dev icon" class="tool-icon">
             <h1>tools.ddanieltan.dev</h1>
         </div>
         <p class="subtitle">
