@@ -332,71 +332,70 @@
             display: none;
         }
 
-                /* Mobile adjustments */
+        /* Mobile adjustments */
 
-                @media (max-width: 768px) {
+        @media (max-width: 768px) {
 
-                    .app-container {
+            .app-container {
 
-                        grid-template-columns: 1fr;
+                grid-template-columns: 1fr;
 
-                    }
+            }
 
-                    .sidebar {
+            .sidebar {
 
-                        order: 2;
+                order: 2;
 
-                    }
+            }
 
-                }
+        }
 
-        
 
-                footer {
 
-                    margin-top: 40px;
+        footer {
 
-                    padding-top: 20px;
+            margin-top: 40px;
 
-                    border-top: 1px solid #eee;
+            padding-top: 20px;
 
-                    display: flex;
+            border-top: 1px solid #eee;
 
-                    justify-content: center;
+            display: flex;
 
-                    gap: 20px;
+            justify-content: center;
 
-                    align-items: center;
+            gap: 20px;
 
-                    color: #64748b;
+            align-items: center;
 
-                    font-size: 0.9rem;
+            color: #64748b;
 
-                }
+            font-size: 0.9rem;
 
-        
+        }
 
-                footer a {
 
-                    color: #64748b;
 
-                    text-decoration: none;
+        footer a {
 
-                    border-bottom: 1px solid transparent;
+            color: #64748b;
 
-                    transition: border-bottom 0.2s;
+            text-decoration: none;
 
-                }
+            border-bottom: 1px solid transparent;
 
-        
+            transition: border-bottom 0.2s;
 
-                footer a:hover {
+        }
 
-                    border-bottom: 1px solid #64748b;
 
-                }
 
-            </style>
+        footer a:hover {
+
+            border-bottom: 1px solid #64748b;
+
+        }
+    </style>
 </head>
 
 <body>
@@ -405,7 +404,8 @@
             <img src="art.svg" alt="Bento Icon" class="tool-icon">
             <h1>Bento Box Meal Planner</h1>
         </div>
-        <p class="subtitle">Design your meal and track nutrition. Choose a layout, then click sections to add food.</p>
+        <p class="subtitle">Design your meal and track nutrition. Choose a layout, then click sections to add food. Data
+            from <a href="https://www.kaggle.com/datasets/adilshamim8/daily-food-and-nutrition-dataset">Kaggle</a>.</p>
     </header>
 
     <main class="app-container">
