@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs:
-  update-index:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,14 +25,12 @@ jobs:
       - name: Run generation script
         run: uv run build_index.py
 
-      - name: Commit and push if changed
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "CI/CD: rebuild index.html"
-            git push
-          fi
+      - name: Deploy to Branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: deploy
+          keep_files: true # Keep existing files that might not be in the checkout if needed, though usually false is safer for pure builds. True is safer here to avoid deleting .git folder if something goes wrong, but actually for this action, it copies to a temp dir.
+          # We want to publish the ROOT directory '.' 
+          # The action automatically handles cleaning the destination branch content.
