@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="art.svg">
+    <title>24×24 Mondrian Generator</title>
+    <style>
+        /* Base Reset & Layout (From Template) */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 1000px; /* Wider for this tool */
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fdfdfd;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header & Icon */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .tool-icon {
+            height: 5em;
+            width: 5em;
+            background-color: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* Common UI Components */
+        .container {
+            background: white;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        button {
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #555;
+            transform: translateY(-1px);
+        }
+
+        /* Mondrian Specific Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .canvas-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .canvas-wrapper {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #displayCanvas {
+            border: 2px solid #1e293b;
+            box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.1);
+            background: white;
+            display: block;
+            width: 100%;
+            max-width: 384px;
+            height: auto;
+            aspect-ratio: 1;
+            cursor: pointer;
+        }
+
+        /* Controls */
+        .control-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-group {
+            background: #fcfcfc;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: #cbd5e1;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            display: block;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #333;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .color-inputs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            padding: 2px;
+            background: white;
+        }
+
+        .color-label {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        .btn-success {
+            background-color: #16a34a;
+        }
+        .btn-success:hover {
+            background-color: #15803d;
+        }
+
+        .icon {
+            width: 1.25em;
+            height: 1.25em;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom 0.2s;
+        }
+
+        footer a:hover {
+            border-bottom: 1px solid #64748b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <!-- The script will inject the SVG into this div -->
+            <div id="headerArt" class="tool-icon" style="overflow: hidden; display: flex; align-items: center; justify-content: center; padding: 0;"></div>
+            <h1>24×24 Mondrian Generator</h1>
+        </div>
+        <p class="subtitle">Generative art in the style of Piet Mondrian. Click on segments to cycle colors.</p>
+    </header>
+
+    <main class="container">
+        <div class="main-grid">
+            <!-- Canvas Area -->
+            <div class="canvas-area">
+                <div class="canvas-wrapper">
+                    <canvas id="displayCanvas" width="384" height="384"></canvas>
+                </div>
+                <button class="btn-success" id="downloadBtn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Download SVG
+                </button>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="control-panel">
+                
+                <div class="control-group">
+                    <label>
+                        Complexity
+                        <span id="complexityVal">3</span>
+                    </label>
+                    <input type="range" id="complexity" min="1" max="10" step="1" value="3">
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        Color Density
+                        <span id="densityVal">30%</span>
+                    </label>
+                    <input type="range" id="density" min="0" max="100" value="30">
+                </div>
+
+                <div class="control-group">
+                    <label>
+                        Line Thickness
+                        <span id="thicknessVal">0.5</span>
+                    </label>
+                    <input type="range" id="thickness" min="0.1" max="2.0" step="0.1" value="0.5">
+                </div>
+
+                <div class="control-group">
+                    <label>Palette</label>
+                    <div class="color-inputs">
+                        <div class="color-input-wrapper">
+                            <input type="color" id="color1" value="#ffffff">
+                            <span class="color-label">Base</span>
+                        </div>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="color2" value="#ff0000">
+                            <span class="color-label">Accent 1</span>
+                        </div>
+                        <div class="color-input-wrapper">
+                            <input type="color" id="color3" value="#0000ff">
+                            <span class="color-label">Accent 2</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="regenerateBtn">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 4v6h-6" />
+                        <path d="M1 20v-6h6" />
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                    </svg>
+                    Regenerate Art
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <a href="/">Home</a>
+        <span>Built by <a href="https://github.com/ddanieltan">@ddanieltan</a></span>
+    </footer>
+
+    <script>
+        // State
+        const state = {
+            complexity: 3,
+            density: 30,
+            thickness: 0.5,
+            colors: ['#ffffff', '#ff0000', '#0000ff'],
+            seed: Date.now()
+        };
+
+        let rectangles = [];
+
+        // Elements
+        const canvas = document.getElementById('displayCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Inputs
+        const inputs = {
+            complexity: document.getElementById('complexity'),
+            density: document.getElementById('density'),
+            thickness: document.getElementById('thickness'),
+            color1: document.getElementById('color1'),
+            color2: document.getElementById('color2'),
+            color3: document.getElementById('color3')
+        };
+
+        // Labels
+        const labels = {
+            complexity: document.getElementById('complexityVal'),
+            density: document.getElementById('densityVal'),
+            thickness: document.getElementById('thicknessVal')
+        };
+
+        const regenerateBtn = document.getElementById('regenerateBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // Simple Seeded Random
+        function sfc32(a, b, c, d) {
+            return function () {
+                a |= 0; b |= 0; c |= 0; d |= 0;
+                let t = (a + b | 0) + d | 0;
+                d = d + 1 | 0;
+                a = b ^ b >>> 9;
+                b = c + (c << 3) | 0;
+                c = (c << 21 | c >>> 11);
+                c = c + t | 0;
+                return (t >>> 0) / 4294967296;
+            }
+        }
+
+        let rand = Math.random;
+
+        // Initialize
+        function init() {
+            loadFromHash();
+            updateInputs();
+            generate();
+            setupEventListeners();
+        }
+
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            const gridScale = canvas.width / 24;
+            const gridX = x / gridScale;
+            const gridY = y / gridScale;
+
+            const clickedRect = rectangles.find(r =>
+                gridX >= r.x && gridX < r.x + r.w &&
+                gridY >= r.y && gridY < r.y + r.h
+            );
+
+            if (clickedRect) {
+                clickedRect.colorIndex = (clickedRect.colorIndex + 1) % 3;
+                draw();
+            }
+        }
+
+        function setupEventListeners() {
+            canvas.addEventListener('click', handleCanvasClick);
+
+            // Sliders
+            Object.keys(inputs).forEach(key => {
+                if (key.startsWith('color')) {
+                    inputs[key].addEventListener('input', (e) => {
+                        const idx = parseInt(key.slice(-1)) - 1;
+                        state.colors[idx] = e.target.value;
+                        updateHash();
+                        draw(); // Just redraw with new colors
+                    });
+                } else {
+                    inputs[key].addEventListener('input', (e) => {
+                        state[key] = parseFloat(e.target.value);
+                        updateLabels();
+                        updateHash();
+                        generate(false); // keep seed
+                    });
+                }
+            });
+
+            regenerateBtn.addEventListener('click', () => {
+                state.seed = Date.now();
+                updateHash();
+                generate();
+            });
+
+            downloadBtn.addEventListener('click', downloadSVG);
+        }
+
+        function updateInputs() {
+            inputs.complexity.value = state.complexity;
+            inputs.density.value = state.density;
+            inputs.thickness.value = state.thickness;
+            inputs.color1.value = state.colors[0];
+            inputs.color2.value = state.colors[1];
+            inputs.color3.value = state.colors[2];
+            updateLabels();
+        }
+
+        function updateLabels() {
+            labels.complexity.textContent = state.complexity;
+            labels.density.textContent = state.density + '%';
+            labels.thickness.textContent = state.thickness;
+        }
+
+        // URL Persistence
+        function updateHash() {
+            const params = new URLSearchParams();
+            params.set('c', state.complexity);
+            params.set('d', state.density);
+            params.set('t', state.thickness);
+            params.set('p', state.colors.join(','));
+            params.set('s', state.seed);
+            window.history.replaceState(null, '', '#' + params.toString());
+        }
+
+        function loadFromHash() {
+            const hash = window.location.hash.slice(1);
+            if (!hash) return;
+
+            const params = new URLSearchParams(hash);
+            if (params.has('c')) state.complexity = parseInt(params.get('c'));
+            if (params.has('d')) state.density = parseInt(params.get('d'));
+            if (params.has('t')) state.thickness = parseFloat(params.get('t'));
+            if (params.has('s')) state.seed = parseInt(params.get('s'));
+            if (params.has('p')) {
+                const colors = params.get('p').split(',');
+                if (colors.length === 3) state.colors = colors;
+            }
+        }
+
+        // Generator Logic
+        function generate(newSeed = false) {
+            if (newSeed) state.seed = Date.now();
+
+            // Setup PRNG
+            const seed = state.seed;
+            rand = sfc32(seed, seed ^ 0xDEADBEEF, seed ^ 0xCAFEBABE, seed ^ 0xBAADF00D);
+
+            // Start with one big rectangle covering 24x24
+            rectangles = [{x: 0, y: 0, w: 24, h: 24, colorIndex: 0}];
+
+            // Target segments: complexity * 2 (Max 20 at complexity 10)
+            const targetCount = state.complexity * 2;
+
+            // Iteratively split until we reach target count or cannot split anymore
+            let iterations = 0;
+            while (rectangles.length < targetCount && iterations < 100) {
+                iterations++;
+
+                // Pick a rectangle to split
+                // Weighted random by area to prefer larger rectangles
+                let totalArea = 0;
+                rectangles.forEach(r => totalArea += (r.w * r.h));
+
+                let randomVal = rand() * totalArea;
+                let candidateIdx = -1;
+                let accum = 0;
+
+                for (let i = 0; i < rectangles.length; i++) {
+                    accum += (rectangles[i].w * rectangles[i].h);
+                    if (randomVal <= accum) {
+                        candidateIdx = i;
+                        break;
+                    }
+                }
+
+                if (candidateIdx !== -1) {
+                    const rect = rectangles[candidateIdx];
+                    const splitResult = attemptSplit(rect);
+
+                    if (splitResult) {
+                        // Remove original and add the two new ones
+                        rectangles.splice(candidateIdx, 1, ...splitResult);
+                    }
+                }
+            }
+
+            // Assign colors
+            assignColors();
+
+            draw();
+        }
+
+        function attemptSplit(rect) {
+            const w = rect.w;
+            const h = rect.h;
+
+            // Cannot split if too small (need at least 2 units to split into 1+1)
+            if (w < 2 && h < 2) return null;
+
+            // Decide direction
+            let splitVertically = rand() > 0.5;
+
+            // Constraints and biases
+            if (w < 2) splitVertically = false; // Must split Horizontally
+            else if (h < 2) splitVertically = true;  // Must split Vertically
+            else {
+                // If not constrained, maybe favor splitting the longer side
+                if (w > h * 1.5) splitVertically = true;
+                else if (h > w * 1.5) splitVertically = false;
+            }
+
+            if (splitVertically) {
+                const splitPos = Math.floor(rand() * (w - 1)) + 1; // 1 to w-1
+                return [
+                    {x: rect.x, y: rect.y, w: splitPos, h: rect.h, colorIndex: rect.colorIndex},
+                    {x: rect.x + splitPos, y: rect.y, w: w - splitPos, h: rect.h, colorIndex: rect.colorIndex}
+                ];
+            } else {
+                const splitPos = Math.floor(rand() * (h - 1)) + 1; // 1 to h-1
+                return [
+                    {x: rect.x, y: rect.y, w: rect.w, h: splitPos, colorIndex: rect.colorIndex},
+                    {x: rect.x, y: rect.y + splitPos, w: rect.w, h: h - splitPos, colorIndex: rect.colorIndex}
+                ];
+            }
+        }
+
+        function assignColors() {
+            rectangles.forEach(rect => {
+                const r = rand();
+                const density = state.density / 100;
+
+                if (r < density) {
+                    // Assign Accent Color
+                    // 50/50 split between Color 2 and Color 3
+                    rect.colorIndex = rand() > 0.5 ? 1 : 2;
+                } else {
+                    rect.colorIndex = 0; // Base color
+                }
+            });
+        }
+
+        // Draw to Canvas
+        function draw() {
+            // Clear
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Scale 24x24 to canvas size (384x384 -> scale 16)
+            const scale = canvas.width / 24;
+
+            ctx.lineWidth = state.thickness * scale;
+            ctx.strokeStyle = '#000000'; // Mondrian lines are black
+
+            rectangles.forEach(rect => {
+                ctx.fillStyle = state.colors[rect.colorIndex];
+
+                // Draw fill
+                ctx.fillRect(
+                    rect.x * scale,
+                    rect.y * scale,
+                    rect.w * scale,
+                    rect.h * scale
+                );
+
+                // Draw border
+                ctx.strokeRect(
+                    rect.x * scale,
+                    rect.y * scale,
+                    rect.w * scale,
+                    rect.h * scale
+                );
+            });
+
+            // Update header art
+            const headerArt = document.getElementById('headerArt');
+            if (headerArt) {
+                headerArt.innerHTML = createSVGString();
+                const svg = headerArt.querySelector('svg');
+                if (svg) {
+                    svg.style.height = '100%';
+                    svg.style.width = '100%';
+                    svg.removeAttribute('width');
+                    svg.removeAttribute('height');
+                }
+            }
+        }
+
+        // SVG Export
+        function downloadSVG() {
+            const svgContent = createSVGString();
+            const blob = new Blob([svgContent], {type: 'image/svg+xml'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mondrian-24x24-${Date.now()}.svg`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function createSVGString() {
+            // We want 24x24 coordinate system
+            let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="384" height="384">`;
+
+            // Group for rectangles
+            svg += `<g stroke="#000" stroke-width="${state.thickness}" stroke-linecap="square" stroke-linejoin="miter">`;
+
+            rectangles.forEach(rect => {
+                svg += `<rect x="${rect.x}" y="${rect.y}" width="${rect.w}" height="${rect.h}" fill="${state.colors[rect.colorIndex]}" />`;
+            });
+
+            svg += `</g></svg>`;
+            return svg;
+        }
+
+        // Run
+        init();
+    </script>
+</body>
+
+</html>
