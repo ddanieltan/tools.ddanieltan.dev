@@ -22,7 +22,7 @@ jobs:
         version: "latest"
 
     - name: Fetch Data
-      run: uv run fetch_preschools_data.py
+      run: cd preschools && uv run fetch_data.py
 
     - name: Commit and push changes
       uses: stefanzweifel/git-auto-commit-action@v5

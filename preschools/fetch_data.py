@@ -68,18 +68,17 @@ def fetch_listings():
 
 def main():
     try:
-        # Ensure directory exists
-        os.makedirs('preschools', exist_ok=True)
+        # Ensure directory exists (current dir)
         
         geo_data = fetch_geojson()
-        with open('preschools/preschools.geojson', 'w') as f:
+        with open('preschools.geojson', 'w') as f:
             json.dump(geo_data, f)
-        print("Saved preschools/preschools.geojson")
+        print("Saved preschools.geojson")
         
         listings_data = fetch_listings()
-        with open('preschools/listings.json', 'w') as f:
+        with open('listings.json', 'w') as f:
             json.dump(listings_data, f)
-        print("Saved preschools/listings.json")
+        print("Saved listings.json")
         
     except Exception as e:
         print(f"Error: {e}")
