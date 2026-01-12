@@ -19,6 +19,7 @@
 
 ## Development
 - **Run:** `python -m http.server 8080`
+- **Scripts:** Use `uv run script.py` for Python scripts.
 - **Conventions:**
     - Use `<meta name="viewport" content="width=device-width, initial-scale=1.0">`.
     - Handle mobile breakpoints (approx 600px).
@@ -33,6 +34,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="art.svg">
     <title>Tool Name</title>
     <style>
         /* Base Reset & Layout */
@@ -47,7 +49,7 @@
             line-height: 1.6;
         }
 
-        /* Header (Mondrian Style) */
+        /* Header & Icon */
         header {
             display: flex;
             flex-direction: column;
@@ -62,15 +64,15 @@
             gap: 12px;
         }
         .tool-icon {
-            height: 2.5em;
-            width: 2.5em;
+            height: 5em;
             background-color: white; 
             border: 2px solid #1e293b;
             border-radius: 8px;
+            padding: 5px;
         }
         h1 {
             margin: 0;
-            font-size: 2rem;
+            font-size: 2.5rem;
             color: #1e293b;
             letter-spacing: -0.5px;
         }
@@ -89,11 +91,32 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .hidden { display: none; }
-        .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; }
+        .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin-bottom: 15px; }
         
         @media (max-width: 600px) {
             body { padding: 15px; }
             .container { padding: 15px; }
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        footer a {
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom 0.2s;
+        }
+        footer a:hover {
+            border-bottom: 1px solid #64748b;
         }
     </style>
 </head>
@@ -109,6 +132,11 @@
     <main class="container">
         <!-- Content -->
     </main>
+
+    <footer>
+        <a href="/">Home</a>
+        <span>Built by <a href="https://github.com/ddanieltan">@ddanieltan</a></span>
+    </footer>
 
     <script>
         // Logic
@@ -147,3 +175,16 @@ try {
 - **PDF.js:** `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/+esm`
 - **Tesseract:** `https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js`
 - **SQLite WASM:** `https://cdn.jsdelivr.net/npm/@sqlite.org/sqlite-wasm@3.46.1-build4/sqlite-wasm/jswasm/sqlite3.mjs`
+
+### 4. Python Script Preamble (uv)
+Always include this preamble in standalone Python scripts to define dependencies managed by `uv`.
+
+```python
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "jinja2",
+#     "requests<3",
+# ]
+# ///
+```

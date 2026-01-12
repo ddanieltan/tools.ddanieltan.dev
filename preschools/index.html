@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="art.svg">
+    <title>Preschools Explorer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <style>
+        /* Base Reset & Layout */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fdfdfd;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header & Icon */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .tool-icon {
+            height: 5em;
+            background-color: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* UI Components */
+        .container {
+            background: white;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #64748b;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        /* Search */
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .search-input:focus,
+        .filter-select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .filter-select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            color: #475569;
+            cursor: pointer;
+        }
+
+        .filter-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+            color: #475569;
+            cursor: pointer;
+            user-select: none;
+            padding: 0 5px;
+        }
+
+        .filter-checkbox input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .info-link {
+            text-decoration: none;
+            color: #94a3b8;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            transition: all 0.2s;
+            margin-left: -4px;
+            /* Slight tuck in */
+        }
+
+        .info-link:hover {
+            color: #3b82f6;
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+
+        /* Level Filters */
+        .level-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .level-btn {
+            padding: 6px 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .level-btn:hover {
+            background: #f1f5f9;
+        }
+
+        .level-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        /* Map */
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            z-index: 1;
+        }
+
+        .legend {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .legend i {
+            width: 10px;
+            height: 10px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.8;
+            border-radius: 50%;
+            margin-top: 4px;
+        }
+
+        /* Details Section */
+        .details-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .details-header {
+            margin-bottom: 16px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 16px;
+        }
+
+        .details-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 4px 0;
+        }
+
+        .details-subtitle {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item label {
+            display: block;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .detail-item span,
+        .detail-item a {
+            font-size: 1.1rem;
+            color: #334155;
+            font-weight: 500;
+        }
+
+        .detail-item a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .detail-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .badge-spark {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-no-spark {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .vacancy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+            gap: 8px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .vacancy-cell {
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            text-align: center;
+            padding: 4px;
+        }
+
+        .vacancy-header {
+            font-weight: bold;
+            color: #64748b;
+            font-size: 0.7rem;
+            margin-bottom: 2px;
+        }
+
+        .status-full {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .status-avail {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .status-limited {
+            color: #f97316;
+            font-weight: bold;
+        }
+
+        .status-na {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            #map {
+                height: 300px;
+            }
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom 0.2s;
+        }
+
+        footer a:hover {
+            border-bottom: 1px solid #64748b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <img src="art.svg" alt="Tool Icon" class="tool-icon">
+            <h1>Preschools Explorer</h1>
+        </div>
+        <p class="subtitle">Explore preschools in Singapore by vacancy. Data from <a
+                href="https://data.gov.sg/datasets?sort=downloadsCount&query=listing&resultId=d_696c994c50745b079b3684f0e90ffc53"
+                target="_blank">data.gov.sg</a>.</p>
+    </header>
+
+    <main class="container">
+        <div class="search-container">
+            <input type="text" id="search-input" class="search-input"
+                placeholder="Search preschools by name, address, or postal code...">
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <select id="scheme-select" class="filter-select">
+                    <option value="all">All Schemes</option>
+                </select>
+                <a href="https://www.ecda.gov.sg/parents/choosing-a-preschool/choosing-a-preschool-for-your-child"
+                    target="_blank" class="info-link" title="Learn more about preschool schemes">ⓘ</a>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <label class="filter-checkbox">
+                    <input type="checkbox" id="spark-checkbox">
+                    SPARK Certified
+                </label>
+                <a href="https://www.ecda.gov.sg/sparkinfo/introduction-spark-2" target="_blank" class="info-link"
+                    title="Learn more about SPARK certification">ⓘ</a>
+            </div>
+        </div>
+
+        <div class="level-filters">
+            <span
+                style="display:flex; align-items:center; font-size:0.9rem; color:#64748b; margin-right:5px;">Availability:</span>
+            <button data-level="infant" class="level-btn">Infant</button>
+            <button data-level="pg" class="level-btn">PG</button>
+            <button data-level="n1" class="level-btn">N1</button>
+            <button data-level="n2" class="level-btn">N2</button>
+            <button data-level="k1" class="level-btn">K1</button>
+            <button data-level="k2" class="level-btn">K2</button>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 15px;">
+            <span id="record-count" style="color: #64748b; font-size: 0.9rem;"></span>
+        </div>
+
+        <div id="error-msg" class="error hidden"></div>
+        <div id="loading-indicator" class="loading hidden">Loading data...</div>
+
+        <div id="map"></div>
+
+        <section id="details-section" class="details-card">
+            <div id="details-placeholder" class="loading">Click a preschool on the map to see details.</div>
+
+            <div id="details-content-wrapper" class="hidden">
+                <div class="details-header">
+                    <h2 id="d-name" class="details-title">Preschool Name</h2>
+                    <div id="d-address" class="details-subtitle">Address</div>
+                    <div id="d-badges" style="margin-top: 8px;"></div>
+                </div>
+
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <label>Contact</label>
+                        <span id="d-contact">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Website</label>
+                        <span id="d-website">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Email</label>
+                        <span id="d-email">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Food Offered</label>
+                        <span id="d-food">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>2nd Languages</label>
+                        <span id="d-lang">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Scheme Type</label>
+                        <span id="d-scheme">-</span>
+                    </div>
+                </div>
+
+                <div class="detail-item">
+                    <label>Availability (Current Month)</label>
+                    <div class="vacancy-grid" id="vacancy-grid">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <a href="/">Home</a>
+        <span>Built by <a href="https://github.com/ddanieltan">@ddanieltan</a></span>
+    </footer>
+
+    <!-- Fuse.js for Fuzzy Search -->
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.basic.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        // --- State ---
+        let map;
+        let markers = L.layerGroup();
+        let allData = [];
+        let fuse;
+        let selectedLevel = null;
+        let legendControl = null;
+
+        // --- Elements ---
+        const errorMsg = document.getElementById('error-msg');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const recordCount = document.getElementById('record-count');
+        const detailsPlaceholder = document.getElementById('details-placeholder');
+        const detailsContentWrapper = document.getElementById('details-content-wrapper');
+        const detailsSection = document.getElementById('details-section');
+        const searchInput = document.getElementById('search-input');
+        const sparkCheckbox = document.getElementById('spark-checkbox');
+        const schemeSelect = document.getElementById('scheme-select');
+        const levelBtns = document.querySelectorAll('.level-btn');
+
+        // --- Fetching Logic ---
+
+        async function fetchPreschoolsGeo() {
+            const response = await fetch('preschools.geojson');
+            if (!response.ok) throw new Error('Failed to load local GeoJSON');
+            return await response.json();
+        }
+
+        async function fetchCentreListings() {
+            const response = await fetch('listings.json');
+            if (!response.ok) throw new Error('Failed to load local Listings');
+            return await response.json();
+        }
+
+        // --- Parsing & Joining ---
+
+        function extractCentreCode(descriptionHtml) {
+            // Looking for pattern: <th>CENTRE_CODE</th> <td>PT9390</td>
+            // Since HTML might vary slightly in spacing or case, regex needs to be robust.
+            // Using a DOMParser is safer than regex for HTML.
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(descriptionHtml, 'text/html');
+                // Find th with text CENTRE_CODE, then get the next td
+                const ths = Array.from(doc.querySelectorAll('th'));
+                const codeTh = ths.find(th => th.textContent.trim() === 'CENTRE_CODE');
+                if (codeTh && codeTh.nextElementSibling) {
+                    return codeTh.nextElementSibling.textContent.trim();
+                }
+            } catch (e) {
+                console.warn("Failed to parse description HTML", e);
+            }
+            return null;
+        }
+
+        async function init() {
+            loadingIndicator.classList.remove('hidden');
+            errorMsg.classList.add('hidden');
+
+            try {
+                const [geoData, listings] = await Promise.all([fetchPreschoolsGeo(), fetchCentreListings()]);
+
+                // Create Map of Listings for O(1) lookup
+                const listingsMap = new Map();
+                listings.forEach(item => {
+                    if (item.centre_code) {
+                        listingsMap.set(item.centre_code, item);
+                    }
+                });
+
+                // Join Data
+                const joinedData = [];
+                geoData.features.forEach(feature => {
+                    const desc = feature.properties.Description;
+                    const code = extractCentreCode(desc);
+
+                    // Coordinates need to be flipped? GeoJSON is [lon, lat], Leaflet wants [lat, lon]
+                    // But L.geoJSON handles that automatically.
+                    // If we manually place markers, we need [lat, lon].
+                    // GeoJSON geometry: { type: "Point", coordinates: [ 103.xxxx, 1.xxxx ] }
+
+                    if (code && listingsMap.has(code)) {
+                        const listing = listingsMap.get(code);
+                        joinedData.push({
+                            code: code,
+                            geo: feature,
+                            details: listing
+                        });
+                    }
+                });
+
+                allData = joinedData;
+
+                // Populate Schemes Dropdown
+                const schemes = new Set();
+                allData.forEach(item => {
+                    const s = item.details.scheme_type || 'na';
+                    schemes.add(s);
+                });
+
+                const sortedSchemes = Array.from(schemes).sort();
+                sortedSchemes.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.textContent = s.toLowerCase() === 'na' ? 'None' : s;
+                    schemeSelect.appendChild(opt);
+                });
+
+                // Init Fuse
+                const options = {
+                    keys: [
+                        'details.centre_name',
+                        'details.centre_address',
+                        'details.postal_code'
+                    ],
+                    threshold: 0.3 // 0.0 is exact match, 1.0 is match anything
+                };
+                fuse = new Fuse(allData, options);
+
+                recordCount.textContent = `${joinedData.length} preschools found`;
+                renderMap(joinedData);
+
+                // Filter Logic
+                function applyFilters() {
+                    const query = searchInput.value.trim();
+                    const sparkOnly = sparkCheckbox.checked;
+                    const selectedScheme = schemeSelect.value;
+
+                    let filtered = allData;
+
+                    if (query) {
+                        const results = fuse.search(query);
+                        filtered = results.map(r => r.item);
+                    }
+
+                    if (sparkOnly) {
+                        filtered = filtered.filter(item => item.details.spark_certified === 'Yes');
+                    }
+
+                    if (selectedScheme !== 'all') {
+                        filtered = filtered.filter(item => (item.details.scheme_type || 'na') === selectedScheme);
+                    }
+
+                    renderMap(filtered);
+                    recordCount.textContent = `${filtered.length} preschools found`;
+                }
+
+                // Listeners
+                searchInput.addEventListener('input', applyFilters);
+                sparkCheckbox.addEventListener('change', applyFilters);
+                schemeSelect.addEventListener('change', applyFilters);
+
+                levelBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const level = btn.dataset.level;
+                        if (selectedLevel === level) {
+                            // Deselect
+                            selectedLevel = null;
+                            btn.classList.remove('active');
+                        } else {
+                            // Select new
+                            selectedLevel = level;
+                            levelBtns.forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                        }
+                        renderMap(allData); // Re-render with new colors (filtered data strictly if we want? currently re-renders all or last filtered set?)
+                        // To allow combination with other filters, we should re-run applyFilters logic or pass filtered data.
+                        // Better: Just re-run applyFilters
+                        applyFilters();
+                    });
+                });
+
+            } catch (e) {
+                console.error(e);
+                errorMsg.textContent = "Error loading data: " + e.message;
+                errorMsg.classList.remove('hidden');
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // --- Map Rendering ---
+
+        function initMap() {
+            if (map) return;
+            map = L.map('map').setView([1.3521, 103.8198], 11);
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(map);
+
+            markers.addTo(map);
+        }
+
+        function updateLegend() {
+            if (legendControl) {
+                map.removeControl(legendControl);
+            }
+
+            legendControl = L.control({position: 'bottomright'});
+            legendControl.onAdd = function (map) {
+                const div = L.DomUtil.create('div', 'legend');
+                const title = selectedLevel
+                    ? `Availability (${selectedLevel.toUpperCase()})`
+                    : 'General Availability';
+
+                div.innerHTML = `<strong>${title}</strong><br>`;
+
+                div.innerHTML += '<i style="background: #22c55e"></i> Available<br>';
+                div.innerHTML += '<i style="background: #f97316"></i> Limited<br>';
+                div.innerHTML += '<i style="background: #ef4444"></i> Full<br>';
+                div.innerHTML += '<i style="background: #94a3b8"></i> Not Applicable<br>';
+
+                return div;
+            };
+            legendControl.addTo(map);
+        }
+
+        function getMarkerColor(details) {
+            // Colors
+            const C_AVAIL = "#22c55e"; // Green
+            const C_LIMITED = "#f97316"; // Orange
+            const C_FULL = "#ef4444";    // Red
+            const C_NA = "#94a3b8";      // Grey
+
+            const levels = ['infant', 'pg', 'n1', 'n2', 'k1', 'k2'];
+
+            // Helper to check a specific value string
+            const check = (val) => {
+                if (!val) return 'na';
+                const v = val.toLowerCase();
+                if (v.includes('vacancy') || v.includes('available')) return 'avail';
+                if (v.includes('limited')) return 'limited';
+                if (v.includes('full')) return 'full';
+                return 'na';
+            };
+
+            if (selectedLevel) {
+                // Specific Level Mode
+                const key = `${selectedLevel}_vacancy_current_month`;
+                const status = check(details[key]);
+
+                if (status === 'avail') return C_AVAIL;
+                if (status === 'limited') return C_LIMITED;
+                if (status === 'full') return C_FULL;
+                return C_NA;
+            } else {
+                // Default / Summary Mode
+                let hasAvail = false;
+                let hasLimited = false;
+                let allFull = true;
+                let allNa = true;
+
+                for (const lvl of levels) {
+                    const key = `${lvl}_vacancy_current_month`;
+                    const status = check(details[key]);
+
+                    if (status === 'avail') hasAvail = true;
+                    if (status === 'limited') hasLimited = true;
+                    if (status !== 'na') allNa = false;
+                    if (status !== 'full' && status !== 'na') allFull = false;
+                }
+
+                if (hasAvail) return C_AVAIL;
+                if (hasLimited) return C_LIMITED;
+                if (allNa) return C_NA; // Mostly NA
+                return C_FULL; // All full (and not all NA)
+            }
+        }
+
+        function renderMap(data) {
+            initMap();
+            markers.clearLayers();
+            updateLegend();
+
+            const bounds = L.latLngBounds();
+
+            data.forEach(item => {
+                const coords = item.geo.geometry.coordinates; // [lon, lat]
+                const lat = coords[1];
+                const lon = coords[0];
+                const name = item.details.centre_name || item.geo.properties.Name;
+                const color = getMarkerColor(item.details);
+
+                // Simple Circle Marker
+                const marker = L.circleMarker([lat, lon], {
+                    radius: 6,
+                    fillColor: color,
+                    color: "#fff",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+
+                marker.bindTooltip(name, {direction: 'top', offset: [0, -5]});
+                marker.on('click', () => showDetails(item));
+
+                markers.addLayer(marker);
+                bounds.extend([lat, lon]);
+            });
+
+            if (data.length > 0) {
+                map.fitBounds(bounds, {padding: [50, 50]});
+            }
+        }
+
+        // --- Details View ---
+
+        function formatVal(val, fallback = 'None') {
+            if (val === null || val === undefined) return fallback;
+            const s = String(val).toLowerCase().trim();
+            if (s === 'na' || s === 'null' || s === 'nil' || s === '' || s === '0') return fallback;
+            return val;
+        }
+
+        function showDetails(item) {
+            const d = item.details;
+
+            document.getElementById('d-name').textContent = d.centre_name;
+            document.getElementById('d-address').textContent = `${d.centre_address}, S(${d.postal_code})`;
+            document.getElementById('d-contact').textContent = formatVal(d.centre_contact_no, '-');
+
+            const webEl = document.getElementById('d-website');
+            const website = formatVal(d.centre_website);
+            if (website !== 'None') {
+                let url = website;
+                if (!url.startsWith('http')) url = 'http://' + url;
+                webEl.innerHTML = `<a href="${url}" target="_blank">Visit Website</a>`;
+            } else {
+                webEl.textContent = '-';
+            }
+
+            const emailEl = document.getElementById('d-email');
+            const email = formatVal(d.centre_email_address);
+            if (email !== 'None') {
+                emailEl.innerHTML = `<a href="mailto:${email}">${email}</a>`;
+            } else {
+                emailEl.textContent = '-';
+            }
+
+            document.getElementById('d-food').textContent = formatVal(d.food_offered, '-');
+            document.getElementById('d-lang').textContent = formatVal(d.second_languages_offered, '-');
+            document.getElementById('d-scheme').textContent = formatVal(d.scheme_type);
+
+            // Badges
+            const badgesContainer = document.getElementById('d-badges');
+            badgesContainer.innerHTML = '';
+            if (d.spark_certified === 'Yes') {
+                const span = document.createElement('span');
+                span.className = 'badge badge-spark';
+                span.textContent = 'SPARK Certified';
+                badgesContainer.appendChild(span);
+            }
+
+            // Vacancy Grid
+            const vacancyGrid = document.getElementById('vacancy-grid');
+            vacancyGrid.innerHTML = '';
+
+            const levels = [
+                {key: 'infant', label: 'Infant'},
+                {key: 'pg', label: 'Playgroup'},
+                {key: 'n1', label: 'N1'},
+                {key: 'n2', label: 'N2'},
+                {key: 'k1', label: 'K1'},
+                {key: 'k2', label: 'K2'}
+            ];
+
+            levels.forEach(lvl => {
+                // Key format: infant_vacancy_current_month
+                const vacancy = d[`${lvl.key}_vacancy_current_month`];
+                if (vacancy) {
+                    const cell = document.createElement('div');
+                    cell.className = 'vacancy-cell';
+
+                    const header = document.createElement('div');
+                    header.className = 'vacancy-header';
+                    header.textContent = lvl.label;
+
+                    const val = document.createElement('div');
+                    val.textContent = vacancy;
+
+                    const vLower = vacancy.toLowerCase();
+
+                    if (vLower === 'full') {
+                        val.classList.add('status-full');
+                    } else if (vLower.includes('vacancy') || vLower.includes('available')) {
+                        val.textContent = 'Available';
+                        val.classList.add('status-avail');
+                    } else if (vLower.includes('limited')) {
+                        val.classList.add('status-limited');
+                    } else if (vLower.includes('not applicable') || vLower.includes('na')) {
+                        val.textContent = 'N/A';
+                        val.classList.add('status-na');
+                    }
+
+                    cell.appendChild(header);
+                    cell.appendChild(val);
+                    vacancyGrid.appendChild(cell);
+                }
+            });
+
+
+            detailsPlaceholder.classList.add('hidden');
+            detailsContentWrapper.classList.remove('hidden');
+
+            // Scroll to details on mobile especially
+            if (window.innerWidth < 800) {
+                detailsSection.scrollIntoView({behavior: 'smooth', block: 'start'});
+            }
+        }
+
+        // --- Init ---
+        init();
+
+    </script>
+</body>
+
+</html>
