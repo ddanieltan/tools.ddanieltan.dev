@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="art.svg">
+    <title>Smart Converter</title>
+    <style>
+        /* Base Reset & Layout */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fdfdfd;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header & Icon */
+        header {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .tool-icon {
+            height: 5em;
+            background-color: white;
+            border: 2px solid #1e293b;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* UI Components */
+        .container {
+            background: white;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        /* Input Container with Highlight Backdrop */
+        .input-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background-color: white;
+            overflow: hidden; /* Hide internal overflows */
+        }
+
+        .input-container:focus-within {
+            border-color: #1e293b;
+            box-shadow: 0 0 0 2px rgba(30, 41, 59, 0.1);
+        }
+
+        textarea, .backdrop {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 12px;
+            border: none; /* Handled by container */
+            font-family: inherit;
+            font-size: 16px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            overflow: auto;
+            background: transparent;
+        }
+
+        .backdrop {
+            z-index: 1;
+            color: transparent; /* Text is invisible */
+            pointer-events: none; /* Allow clicks to pass through to textarea */
+        }
+
+        textarea {
+            z-index: 2;
+            color: inherit; /* Text visible */
+            resize: none; /* Resize handled by container height */
+        }
+
+        textarea:focus {
+            outline: none;
+        }
+
+        .highlight {
+            background-color: #fef9c3; /* Light Yellow */
+            border-radius: 2px;
+            box-shadow: 0 0 0 1px #fef9c3; 
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        .highlight.selected {
+            background-color: #fde047; /* Darker Yellow/Gold */
+            box-shadow: 0 0 0 2px #facc15; /* Stronger border/glow */
+            font-weight: bold; /* Optional, but helps visibility */
+        }
+
+        /* Results Area */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Single column for focused view */
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .number-card {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .conversion-sections {
+            padding: 5px 0;
+        }
+
+        .conversion-category {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .conversion-category:last-child {
+            border-bottom: none;
+        }
+
+        .category-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+
+        .conversion-item {
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: center; /* Centered */
+            align-items: center;
+            margin-bottom: 6px;
+            padding: 4px 0;
+            gap: 8px; /* Space between parts */
+        }
+
+        .conversion-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .conversion-text {
+            color: #333;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+        
+        .unit-label {
+            color: #64748b;
+        }
+
+        .unit-value {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #94a3b8;
+            padding: 40px 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 2px dashed #e2e8f0;
+        }
+
+        .instruction-state {
+             text-align: center;
+             color: #64748b;
+             padding: 20px;
+             font-style: italic;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            align-items: center;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #64748b;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom 0.2s;
+        }
+
+        footer a:hover {
+            border-bottom: 1px solid #64748b;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="brand">
+            <img src="art.svg" alt="Smart Converter Icon" class="tool-icon">
+            <h1>Smart Converter</h1>
+        </div>
+        <p class="subtitle">Paste text to automatically identify numbers. Click on a number to see conversions.</p>
+    </header>
+
+    <main class="container">
+        <label for="input-text">Input Text</label>
+        
+        <div class="input-container">
+            <div id="backdrop" class="backdrop"></div>
+            <textarea id="input-text" placeholder="Example: The server has 1073741824 bytes of RAM. We drove 50 miles today. It's 25.5 degrees out..."></textarea>
+        </div>
+
+        <div id="results-area">
+            <div class="empty-state">Paste text containing numbers to begin...</div>
+        </div>
+    </main>
+
+    <footer>
+        <a href="/">Home</a>
+        <span>Built by <a href="https://github.com/ddanieltan">@ddanieltan</a></span>
+    </footer>
+
+    <script>
+        const inputText = document.getElementById('input-text');
+        const backdrop = document.getElementById('backdrop');
+        const resultsArea = document.getElementById('results-area');
+
+        // State
+        let currentMatches = [];
+        let selectedIndex = null; // Index into currentMatches, not string index
+
+        // Regex to find numbers: matches integers, decimals, and negative numbers.
+        const numberRegex = /-?\b\d+(?:\.\d+)?\b/g;
+
+        function escapeHTML(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // --- Core Logic ---
+
+        function findMatches() {
+            const text = inputText.value;
+            currentMatches = [];
+            const matches = text.matchAll(numberRegex);
+            
+            for (const match of matches) {
+                currentMatches.push({
+                    value: match[0],
+                    index: match.index,
+                    length: match[0].length,
+                    endIndex: match.index + match[0].length
+                });
+            }
+        }
+
+        function updateUI() {
+            renderHighlights();
+            renderResults();
+        }
+
+        function renderHighlights() {
+            const text = inputText.value;
+            let html = '';
+            let lastCursor = 0;
+
+            // Build HTML manually to ensure index alignment and support styling specific matches
+            currentMatches.forEach((match, i) => {
+                // Text before match
+                const beforeText = text.slice(lastCursor, match.index);
+                html += escapeHTML(beforeText);
+
+                // Match text
+                const matchText = match.value;
+                const isSelected = (i === selectedIndex);
+                const className = isSelected ? 'highlight selected' : 'highlight';
+                
+                html += `<span class="${className}">${escapeHTML(matchText)}</span>`;
+
+                lastCursor = match.endIndex;
+            });
+
+            // Remaining text
+            html += escapeHTML(text.slice(lastCursor));
+            
+            // Handle trailing newline
+            if (html.endsWith('\n')) {
+                html += '<br>';
+            }
+
+            backdrop.innerHTML = html;
+        }
+
+        function renderResults() {
+            if (currentMatches.length === 0) {
+                 if (inputText.value.trim().length === 0) {
+                     resultsArea.innerHTML = '<div class="empty-state">Paste text containing numbers to begin...</div>';
+                 } else {
+                     resultsArea.innerHTML = '<div class="empty-state">No numbers found in the text.</div>';
+                 }
+                 return;
+            }
+
+            if (selectedIndex === null) {
+                resultsArea.innerHTML = '<div class="instruction-state">Click on a highlighted number to see conversions.</div>';
+                return;
+            }
+
+            const match = currentMatches[selectedIndex];
+            if (!match) return; // Should not happen
+
+            const val = parseNumber(match.value);
+            const numStr = match.value;
+            
+            if (isNaN(val)) return;
+
+            let html = '<div class="results-grid">';
+            html += `<div class="number-card">
+                        <div class="conversion-sections">`;
+            
+            let hasConversions = false;
+
+            for (const [category, convertFn] of Object.entries(converters)) {
+                const conversions = convertFn(val, numStr);
+                if (conversions.length > 0) {
+                    hasConversions = true;
+                    html += `<div class="conversion-category">
+                                <div class="category-title">${category}</div>`;
+                    conversions.forEach(text => {
+                        html += `<div class="conversion-item">
+                                    <span class="conversion-text">${text}</span>
+                                 </div>`;
+                    });
+                    html += `</div>`;
+                }
+            }
+            
+            if (!hasConversions) {
+                html += '<div class="conversion-category">No conversions available for this number.</div>';
+            }
+
+            html += `</div></div></div>`;
+            resultsArea.innerHTML = html;
+        }
+
+        function checkSelection() {
+            // Determine which match is currently under the cursor
+            const cursor = inputText.selectionStart;
+            let newSelectedIndex = null;
+
+            // Simple check: is cursor inside or right at the edge of a match?
+            // Allow clicking anywhere inside the number
+            for (let i = 0; i < currentMatches.length; i++) {
+                const m = currentMatches[i];
+                // Check if cursor is within [start, end]
+                if (cursor >= m.index && cursor <= m.endIndex) {
+                    newSelectedIndex = i;
+                    break;
+                }
+            }
+
+            if (newSelectedIndex !== selectedIndex) {
+                selectedIndex = newSelectedIndex;
+                updateUI();
+            }
+        }
+
+        // --- Helpers ---
+
+        function handleScroll() {
+            backdrop.scrollTop = inputText.scrollTop;
+            backdrop.scrollLeft = inputText.scrollLeft;
+        }
+
+        function formatNumber(num) {
+            if (Math.abs(num) < 0.0001 && num !== 0) {
+                return num.toExponential(4);
+            }
+            return Number(num.toFixed(4)).toLocaleString(undefined, { 
+                maximumFractionDigits: 4,
+                minimumFractionDigits: 0
+            });
+        }
+
+        function parseNumber(str) {
+            return parseFloat(str);
+        }
+
+        const converters = {
+            "Data Storage": (n, numStr) => {
+                const results = [];
+                const k = 1024;
+                if (n > 0) {
+                    results.push(`${numStr} Bytes = ${formatNumber(n / k)} KB`);
+                    results.push(`${numStr} Bytes = ${formatNumber(n / (k * k))} MB`);
+                    results.push(`${numStr} Bytes = ${formatNumber(n / (k * k * k))} GB`);
+                    
+                    if (n > 100) { 
+                         results.push(`${numStr} MB = ${formatNumber(n / k)} GB`);
+                    }
+                }
+                return results;
+            },
+            "Length & Distance": (n, numStr) => {
+                const results = [];
+                results.push(`${numStr} Inches = ${formatNumber(n * 2.54)} cm`);
+                results.push(`${numStr} Feet = ${formatNumber(n * 0.3048)} m`);
+                results.push(`${numStr} Miles = ${formatNumber(n * 1.60934)} km`);
+                results.push(`${numStr} cm = ${formatNumber(n / 2.54)} in`);
+                results.push(`${numStr} m = ${formatNumber(n * 3.28084)} ft`);
+                results.push(`${numStr} km = ${formatNumber(n * 0.621371)} mi`);
+                return results;
+            },
+            "Weight / Mass": (n, numStr) => {
+                const results = [];
+                results.push(`${numStr} lbs = ${formatNumber(n * 0.453592)} kg`);
+                results.push(`${numStr} kg = ${formatNumber(n * 2.20462)} lbs`);
+                results.push(`${numStr} oz = ${formatNumber(n * 28.3495)} g`);
+                return results;
+            },
+            "Temperature": (n, numStr) => {
+                const results = [];
+                const fToC = (n - 32) * 5 / 9;
+                const cToF = (n * 9 / 5) + 32;
+                results.push(`${numStr} \u00B0F = ${formatNumber(fToC)} \u00B0C`);
+                results.push(`${numStr} \u00B0C = ${formatNumber(cToF)} \u00B0F`);
+                return results;
+            }
+        };
+
+        // --- Event Listeners ---
+
+        inputText.addEventListener('input', () => {
+            findMatches();
+            // Reset selection on edit, or try to maintain it?
+            // Safer to reset or check if cursor is still on valid number.
+            // Let's re-check selection immediately.
+            checkSelection(); 
+            updateUI();
+        });
+
+        inputText.addEventListener('scroll', handleScroll);
+
+        // Update selection on click or keyboard navigation
+        ['click', 'keyup', 'focus'].forEach(evt => {
+            inputText.addEventListener(evt, checkSelection);
+        });
+
+        // Initial setup
+        if (inputText.value) {
+            findMatches();
+            checkSelection(); // This might auto-select if cursor is at 0 and number is at 0
+            updateUI();
+        }
+    </script>
+</body>
+
+</html>
