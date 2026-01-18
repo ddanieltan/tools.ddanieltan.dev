@@ -294,7 +294,7 @@
         let selectedIndex = null; // Index into currentMatches, not string index
 
         // Regex to find numbers: matches integers, decimals, and negative numbers.
-        const numberRegex = /-?\b\d+(?:\.\d+)?\b/g;
+        const numberRegex = /-?\d+(?:\.\d+)?/g;
 
         function escapeHTML(text) {
             return text
