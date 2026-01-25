@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/svg+xml" href="art.svg">
+    <title>Neovim Colorscheme Designer</title>
+    <style>
+        /* Base Reset & Layout */
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            background-color: #fdfdfd;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+        }
+        .tool-icon {
+            height: 3em;
+            width: 3em;
+            background-color: white; 
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 2px;
+        }
+        h1 { margin: 0; font-size: 1.5rem; color: #1e293b; }
+        .subtitle { color: #64748b; margin: 0; font-size: 0.9rem; }
+
+        /* Main Layout */
+        main {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+        }
+        
+        @media (min-width: 800px) {
+            main { flex-direction: row; }
+        }
+
+        /* Sidebar Controls */
+        .controls {
+            width: 100%;
+            padding: 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            overflow-y: auto;
+        }
+        @media (min-width: 800px) {
+            .controls {
+                width: 320px;
+                border-bottom: none;
+                border-right: 1px solid #e2e8f0;
+                height: calc(100vh - 85px); /* approximate header height */
+            }
+        }
+
+        .control-group { margin-bottom: 20px; }
+        .control-group h3 {
+            margin: 0 0 10px 0;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+        .color-input {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            background: white;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+        .color-input label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .color-input input[type="color"] {
+            border: none;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            background: none;
+        }
+        .color-input input[type="text"] {
+            width: 80px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 4px;
+            font-family: monospace;
+            text-transform: uppercase;
+            margin-left: 10px;
+        }
+
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        .btn-primary { background: #1e293b; color: white; }
+        .btn-secondary { background: white; border: 1px solid #cbd5e1; color: #333; }
+
+        /* Preview Area */
+        .preview-area {
+            flex: 1;
+            padding: 20px;
+            background: #e2e2e2; /* Default container bg */
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 1200px) {
+            .examples-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .code-window {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            /* These variables will be set by JS/CSS root */
+            background-color: var(--bg);
+            color: var(--fg);
+            border: 1px solid rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .window-header {
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.05); /* Slight tint */
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.8rem;
+            opacity: 0.7;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .code-content {
+            padding: 20px;
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-x: auto;
+            flex: 1;
+        }
+
+        /* Syntax Highlighting Classes (Mapped to CSS Variables) */
+        .hl-comment { color: var(--comment); background-color: var(--comment-bg); font-style: italic; }
+        .hl-keyword { color: var(--keyword); font-weight: bold; }
+        .hl-function { color: var(--function); }
+        .hl-string { color: var(--string); }
+        .hl-type { color: var(--type); }
+        .hl-variable { color: var(--variable); }
+        .hl-constant { color: var(--constant); }
+        .hl-operator { color: var(--operator); }
+        .hl-tag { color: var(--keyword); }
+        .hl-attr { color: var(--variable); }
+
+        footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        footer a { color: #64748b; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+    </style>
+</head>
+<body>
+    <header>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <img src="art.svg" alt="Tool Icon" class="tool-icon">
+            <div>
+                <h1>Nvim Colors</h1>
+                <p class="subtitle">Minimalist Colorscheme Designer</p>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="controls">
+            <div class="control-group">
+                <h3>Editor</h3>
+                <div class="color-input">
+                    <label>Background</label>
+                    <input type="color" id="input-bg" value="#16161D">
+                    <input type="text" id="hex-bg" value="#16161D">
+                </div>
+                <div class="color-input">
+                    <label>Foreground</label>
+                    <input type="color" id="input-fg" value="#DCD7BA">
+                    <input type="text" id="hex-fg" value="#DCD7BA">
+                </div>
+                <div class="color-input">
+                    <label>Cursor Line</label>
+                    <input type="color" id="input-cursorline" value="#1f1f28">
+                    <input type="text" id="hex-cursorline" value="#1f1f28">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Syntax</h3>
+                <div class="color-input">
+                    <label>Comment</label>
+                    <input type="color" id="input-comment" value="#727169">
+                    <input type="text" id="hex-comment" value="#727169">
+                </div>
+                <div class="color-input">
+                    <label>Comment BG</label>
+                    <input type="color" id="input-comment_bg" value="#16161D">
+                    <input type="text" id="hex-comment_bg" value="#16161D">
+                </div>
+                <div class="color-input">
+                    <label>Keyword</label>
+                    <input type="color" id="input-keyword" value="#E46876">
+                    <input type="text" id="hex-keyword" value="#E46876">
+                </div>
+                <div class="color-input">
+                    <label>Function</label>
+                    <input type="color" id="input-function" value="#7E9CD8">
+                    <input type="text" id="hex-function" value="#7E9CD8">
+                </div>
+                <div class="color-input">
+                    <label>String</label>
+                    <input type="color" id="input-string" value="#98BB6C">
+                    <input type="text" id="hex-string" value="#98BB6C">
+                </div>
+                <div class="color-input">
+                    <label>Type/Class</label>
+                    <input type="color" id="input-type" value="#FFA066">
+                    <input type="text" id="hex-type" value="#FFA066">
+                </div>
+                <div class="color-input">
+                    <label>Variable</label>
+                    <input type="color" id="input-variable" value="#DCD7BA">
+                    <input type="text" id="hex-variable" value="#DCD7BA">
+                </div>
+                <div class="color-input">
+                    <label>Constant</label>
+                    <input type="color" id="input-constant" value="#D27E99">
+                    <input type="text" id="hex-constant" value="#D27E99">
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn-primary" id="btn-export">Copy Lua Configuration</button>
+                <button class="btn-secondary" id="btn-reset">Reset to Defaults</button>
+            </div>
+        </div>
+
+        <div class="preview-area" id="preview-container">
+            <div class="examples-grid">
+                <!-- Python Sample -->
+                <div class="code-window">
+                    <div class="window-header"><span>src/main.py</span> <span>PYTHON</span></div>
+                    <div class="code-content"><span class="hl-keyword">import</span> <span class="hl-variable">os</span>
+
+<span class="hl-comment"># Calculate fibonacci sequence</span>
+<span class="hl-keyword">def</span> <span class="hl-function">fibonacci</span>(<span class="hl-variable">n</span>: <span class="hl-type">int</span>) -> <span class="hl-type">int</span>:
+    <span class="hl-keyword">if</span> <span class="hl-variable">n</span> <= <span class="hl-constant">1</span>:
+        <span class="hl-keyword">return</span> <span class="hl-variable">n</span>
+    <span class="hl-keyword">else</span>:
+        <span class="hl-keyword">return</span> <span class="hl-function">fibonacci</span>(<span class="hl-variable">n</span>-<span class="hl-constant">1</span>) + <span class="hl-function">fibonacci</span>(<span class="hl-variable">n</span>-<span class="hl-constant">2</span>)
+
+<span class="hl-variable">result</span> = <span class="hl-function">fibonacci</span>(<span class="hl-constant">10</span>)
+<span class="hl-function">print</span>(<span class="hl-string">f"Result: {result}"</span>)</div>
+                </div>
+
+                <!-- HTML Sample -->
+                <div class="code-window">
+                    <div class="window-header"><span>index.html</span> <span>HTML</span></div>
+                    <div class="code-content"><span class="hl-tag">&lt;!DOCTYPE html&gt;</span>
+<span class="hl-tag">&lt;html</span> <span class="hl-attr">lang</span>=<span class="hl-string">"en"</span><span class="hl-tag">&gt;</span>
+<span class="hl-tag">&lt;head&gt;</span>
+    <span class="hl-tag">&lt;meta</span> <span class="hl-attr">charset</span>=<span class="hl-string">"UTF-8"</span><span class="hl-tag">&gt;</span>
+    <span class="hl-tag">&lt;title&gt;</span>App<span class="hl-tag">&lt;/title&gt;</span>
+<span class="hl-tag">&lt;/head&gt;</span>
+<span class="hl-tag">&lt;body&gt;</span>
+    <span class="hl-comment">&lt;!-- Main Content --&gt;</span>
+    <span class="hl-tag">&lt;div</span> <span class="hl-attr">class</span>=<span class="hl-string">"container"</span><span class="hl-tag">&gt;</span>
+        <span class="hl-tag">&lt;h1&gt;</span>Hello World<span class="hl-tag">&lt;/h1&gt;</span>
+        <span class="hl-tag">&lt;button&gt;</span>Click Me<span class="hl-tag">&lt;/button&gt;</span>
+    <span class="hl-tag">&lt;/div&gt;</span>
+<span class="hl-tag">&lt;/body&gt;</span>
+<span class="hl-tag">&lt;/html&gt;</span></div>
+                </div>
+
+                <!-- SQL Sample -->
+                <div class="code-window">
+                    <div class="window-header"><span>query.sql</span> <span>SQL</span></div>
+                    <div class="code-content"><span class="hl-comment">-- Select active users</span>
+<span class="hl-keyword">SELECT</span> 
+    <span class="hl-variable">id</span>, 
+    <span class="hl-variable">username</span>, 
+    <span class="hl-function">COUNT</span>(<span class="hl-variable">order_id</span>) <span class="hl-keyword">AS</span> <span class="hl-variable">total_orders</span>
+<span class="hl-keyword">FROM</span> <span class="hl-type">users</span>
+<span class="hl-keyword">WHERE</span> 
+    <span class="hl-variable">status</span> = <span class="hl-string">'active'</span> 
+    <span class="hl-keyword">AND</span> <span class="hl-variable">created_at</span> > <span class="hl-string">'2023-01-01'</span>
+<span class="hl-keyword">LIMIT</span> <span class="hl-constant">100</span>;</div>
+                </div>
+            </div>
+
+            <!-- Generated Config (Always visible) -->
+            <div id="config-window" class="code-window">
+                <div class="window-header"><span>colorscheme.lua</span> <span>GENERATED CONFIG</span></div>
+                <div class="code-content" id="config-display"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <a href="/">Home</a>
+        <span>Built by <a href="https://github.com/ddanieltan">@ddanieltan</a></span>
+    </footer>
+
+    <script>
+        // Configuration Map: Maps input IDs to CSS Variables and Nvim Groups
+        const colorMap = {
+            'bg': { var: '--bg', group: 'Normal', prop: 'bg' },
+            'fg': { var: '--fg', group: 'Normal', prop: 'fg' },
+            'cursorline': { var: '--cursorline', group: 'CursorLine', prop: 'bg' },
+            'comment': { var: '--comment', group: 'Comment', prop: 'fg' },
+            'comment_bg': { var: '--comment-bg', group: 'Comment', prop: 'bg' },
+            'keyword': { var: '--keyword', group: 'Statement', prop: 'fg' }, // Also Keyword, Conditional
+            'function': { var: '--function', group: 'Function', prop: 'fg' },
+            'string': { var: '--string', group: 'String', prop: 'fg' },
+            'type': { var: '--type', group: 'Type', prop: 'fg' },
+            'variable': { var: '--variable', group: 'Identifier', prop: 'fg' },
+            'constant': { var: '--constant', group: 'Constant', prop: 'fg' },
+        };
+
+        const root = document.documentElement;
+        const previewContainer = document.getElementById('preview-container');
+
+        // State Management
+        function updateUrlState() {
+            const params = new URLSearchParams();
+            Object.keys(colorMap).forEach(key => {
+                const val = document.getElementById(`hex-${key}`).value;
+                params.set(key, val.replace('#', ''));
+            });
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.replaceState({}, '', newUrl);
+        }
+
+        function loadFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            let hasParams = false;
+            Object.keys(colorMap).forEach(key => {
+                const val = params.get(key);
+                if (val) {
+                    const hex = '#' + val;
+                    if (/^#[0-9A-F]{6}$/i.test(hex)) {
+                        updateColor(key, hex, false); // false = don't update URL yet
+                        hasParams = true;
+                    }
+                }
+            });
+            return hasParams;
+        }
+
+        function updateColor(key, value, saveToUrl = true) {
+            const config = colorMap[key];
+            if (!config) return;
+
+            // Update CSS Variable
+            root.style.setProperty(config.var, value);
+
+            // Update Inputs
+            document.getElementById(`input-${key}`).value = value;
+            document.getElementById(`hex-${key}`).value = value;
+
+            if (saveToUrl) updateUrlState();
+        }
+
+        // Initialize
+        // 1. First, initialize everything from the default input values
+        Object.keys(colorMap).forEach(key => {
+            const picker = document.getElementById(`input-${key}`);
+            updateColor(key, picker.value, false);
+        });
+
+        // 2. Then, override with any values found in the URL
+        loadFromUrl();
+        
+        // 3. Initialize config display with the final state
+        updateConfigDisplay();
+
+        // Initialize listeners
+        Object.keys(colorMap).forEach(key => {
+            const picker = document.getElementById(`input-${key}`);
+            const text = document.getElementById(`hex-${key}`);
+
+            picker.addEventListener('input', (e) => updateColor(key, e.target.value));
+            text.addEventListener('change', (e) => {
+                let val = e.target.value;
+                if (!val.startsWith('#')) val = '#' + val;
+                if (/^#[0-9A-F]{6}$/i.test(val)) {
+                    updateColor(key, val);
+                }
+            });
+        });
+
+        // Export Functionality
+        function generateLuaConfig() {
+            const c = {};
+            Object.keys(colorMap).forEach(key => {
+                c[key] = document.getElementById(`hex-${key}`).value;
+            });
+
+            return `-- Minimal Neovim Colorscheme
+-- Generated by tools.ddanieltan.dev/colorscheme
+
+local colors = {
+    bg = "${c.bg}",
+    fg = "${c.fg}",
+    comment = "${c.comment}",
+    comment_bg = "${c.comment_bg}",
+    keyword = "${c.keyword}",
+    func = "${c.function}",
+    string = "${c.string}",
+    type = "${c.type}",
+    var = "${c.variable}",
+    const = "${c.constant}",
+    cursorline = "${c.cursorline}",
+}
+
+local theme = {
+    Normal = { fg = colors.fg, bg = colors.bg },
+    CursorLine = { bg = colors.cursorline },
+    Comment = { fg = colors.comment, bg = colors.comment_bg, italic = true },
+    
+    -- Syntax
+    Statement = { fg = colors.keyword },
+    Conditional = { fg = colors.keyword },
+    Repeat = { fg = colors.keyword },
+    
+    Function = { fg = colors.func },
+    Identifier = { fg = colors.var },
+    
+    String = { fg = colors.string },
+    Constant = { fg = colors.const },
+    Number = { fg = colors.const },
+    Boolean = { fg = colors.const },
+    
+    Type = { fg = colors.type },
+    Structure = { fg = colors.keyword },
+    
+    -- UI
+    Pmenu = { fg = colors.fg, bg = colors.cursorline },
+    LineNr = { fg = colors.comment },
+}
+
+local function set_hl(group, opts)
+    vim.api.nvim_set_hl(0, group, opts)
+end
+
+for group, opts in pairs(theme) do
+    set_hl(group, opts)
+end`;
+        }
+
+        function highlightLua(code) {
+            // Escape HTML entities first
+            code = code.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+            // Tokenizer regex
+            // 1. Comments: -- followed by anything until end of line
+            // 2. Strings: "..." or '...'
+            // 3. Keywords: local, return, ...
+            // 4. Constants: numbers, true, false
+            // 5. Functions: set_hl, print, vim.api...
+            
+            const regex = /(--.*)|(["'].*?["'])|\b(local|return|function|for|in|do|end|if|then|else)\b|\b(true|false|\d+)\b|\b(vim\.api\.[\w_]+|set_hl|pairs|print)\b/g;
+
+            return code.replace(regex, (match, comment, string, keyword, constant, func) => {
+                if (comment) return `<span class="hl-comment">${comment}</span>`;
+                if (string) return `<span class="hl-string">${string}</span>`;
+                if (keyword) return `<span class="hl-keyword">${keyword}</span>`;
+                if (constant) return `<span class="hl-constant">${constant}</span>`;
+                if (func) return `<span class="hl-function">${func}</span>`;
+                return match;
+            });
+        }
+
+        function updateConfigDisplay() {
+            const display = document.getElementById('config-display');
+            if (display) {
+                display.innerHTML = highlightLua(generateLuaConfig());
+            }
+        }
+
+        document.getElementById('btn-export').addEventListener('click', () => {
+            const output = generateLuaConfig();
+            navigator.clipboard.writeText(output).then(() => {
+                const btn = document.getElementById('btn-export');
+                const original = btn.textContent;
+                btn.textContent = 'Copied to Clipboard!';
+                setTimeout(() => btn.textContent = original, 2000);
+            });
+        });
+
+        // Initialize display
+        updateConfigDisplay();
+
+        // Update updateColor to also refresh config display
+        const originalUpdateColor = updateColor;
+        updateColor = function(key, value, saveToUrl = true) {
+            originalUpdateColor(key, value, saveToUrl);
+            updateConfigDisplay();
+        };
+
+        // Reset
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            Object.keys(colorMap).forEach(key => {
+                const def = document.getElementById(`input-${key}`).defaultValue;
+                updateColor(key, def);
+            });
+        });
+
+    </script>
+</body>
+</html>
